@@ -8,7 +8,7 @@ spring:
   # 数据库配置
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/ywf_picture
+    url: jdbc:mysql://localhost:3306/picture
     username: root
     password: 123123
 
@@ -34,5 +34,7 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.ywf.ywfpicturebackend.controller
+
+
 
 
