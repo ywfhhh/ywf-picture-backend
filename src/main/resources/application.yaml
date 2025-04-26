@@ -3,6 +3,9 @@ server:
   servlet:
     context-path: /api
 spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB #更改最大文件大小限制
   application:
     name: ywf-picture-backend
   # 数据库配置
@@ -34,7 +37,6 @@ knife4j:
         api-rule: package
         api-rule-resources:
           - com.ywf.ywfpicturebackend.controller
-
 
 
 

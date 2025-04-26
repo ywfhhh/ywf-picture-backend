@@ -1,0 +1,8 @@
+cos:
+  client:
+    endpoint: oss-cn-shenzhen.aliyuncs.com
+    region: cn-shenzhen
+    bucket-name: ywf-picture-backend
+    access-key-id: LTAI5tPCAGvdg55NjVzqPRcr
+    access-key-secret: RuZTP5acuyUQS55ZFDmC6UttromQC1
+    host: https://ywf-picture-backend.oss-cn-shenzhen.aliyuncs.com
