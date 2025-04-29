@@ -2,6 +2,8 @@ package com.ywf.ywfpicturebackend.controller;
 
 import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.github.benmanes.caffeine.cache.Cache;
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.ywf.ywfpicturebackend.annotation.AuthCheck;
 import com.ywf.ywfpicturebackend.common.BaseResponse;
 import com.ywf.ywfpicturebackend.common.DeleteRequest;
@@ -19,14 +21,15 @@ import com.ywf.ywfpicturebackend.service.PictureService;
 import com.ywf.ywfpicturebackend.service.TagService;
 import com.ywf.ywfpicturebackend.service.UserService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.util.DigestUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @RestController
@@ -41,6 +44,12 @@ public class PictureController {
     private TagService tagService;
     @Resource
     private CategoryService categoryService;
+    private final Cache<String, String> LOCAL_CACHE =
+            Caffeine.newBuilder().initialCapacity(1024)
+                    .maximumSize(10000L)
+                    // 缓存 5 分钟移除
+                    .expireAfterWrite(5L, TimeUnit.MINUTES)
+                    .build();
 
     /**
      * 上传图片（可重新上传）
@@ -53,6 +62,18 @@ public class PictureController {
         User loginUser = userService.getLoginUser(request);
         PictureVO pictureVO = pictureService.uploadPicture(multipartFile, pictureUploadRequest, loginUser);
         return ResultUtils.success(pictureVO);
+    }
+
+    @PostMapping("/upload/batch")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Integer> uploadPictureByBatch(
+            @RequestBody PictureUploadByBatchRequest pictureUploadByBatchRequest,
+            HttpServletRequest request
+    ) {
+        ThrowUtils.throwIf(pictureUploadByBatchRequest == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        int uploadCount = pictureService.uploadPictureByBatch(pictureUploadByBatchRequest, loginUser);
+        return ResultUtils.success(uploadCount);
     }
 
     /**
@@ -170,13 +191,26 @@ public class PictureController {
         long current = pictureQueryRequest.getCurrent();
         long size = pictureQueryRequest.getPageSize();
         pictureQueryRequest.setReviewStatus(PictureReviewStatusEnum.PASS.getValue());
+//        // 构建缓存 key
+//        String queryCondition = JSONUtil.toJsonStr(pictureQueryRequest);
+//        String hashKey = DigestUtils.md5DigestAsHex(queryCondition.getBytes());
+//        String cacheKey = "listPictureVOByPage:" + hashKey;
+//        // 从本地缓存中查询
+//        String cachedValue = LOCAL_CACHE.getIfPresent(cacheKey);
+//        if (cachedValue != null) {
+//            // 如果缓存命中，返回结果
+//            Page<PictureVO> cachedPage = JSONUtil.toBean(cachedValue, Page.class);
+//            return ResultUtils.success(cachedPage);
+//        }
         // 限制爬虫
         ThrowUtils.throwIf(size > 20, ErrorCode.PARAMS_ERROR);
         // 查询数据库
         Page<Picture> picturePage = pictureService.page(new Page<>(current, size),
                 pictureService.getQueryWrapper(pictureQueryRequest));
+        Page<PictureVO> pictureVOPage = pictureService.getPictureVOPage(picturePage, request);
+//        LOCAL_CACHE.put(cacheKey, JSONUtil.toJsonStr(pictureVOPage));
         // 获取封装类
-        return ResultUtils.success(pictureService.getPictureVOPage(picturePage, request));
+        return ResultUtils.success(pictureVOPage);
     }
 
     /**

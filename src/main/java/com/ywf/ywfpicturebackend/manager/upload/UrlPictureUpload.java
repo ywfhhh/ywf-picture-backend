@@ -12,15 +12,27 @@ import com.ywf.ywfpicturebackend.exception.ThrowUtils;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 @Service
 public class UrlPictureUpload extends PictureUploadTemplate {
+    private HashMap<String, String> mapContentTypeToExt = new HashMap<>();
+
+    public UrlPictureUpload() {
+        mapContentTypeToExt.put("image/jpg", "jpg");
+        mapContentTypeToExt.put("image/jpeg", "jpeg");
+        mapContentTypeToExt.put("image/png", "png");
+        mapContentTypeToExt.put("image/gif", "gif");
+    }
+
     @Override
-    protected void validPicture(Object inputSource) {
+    public void validPicture(Object inputSource) {
         String fileUrl = (String) inputSource;
         ThrowUtils.throwIf(StrUtil.isBlank(fileUrl), ErrorCode.PARAMS_ERROR, "文件地址不能为空");
         try {
@@ -69,14 +81,14 @@ public class UrlPictureUpload extends PictureUploadTemplate {
     }
 
     @Override
-    protected String getOriginFilename(Object inputSource) {
+    public String getOriginFilename(Object inputSource) {
         String fileUrl = (String) inputSource;
         // 从 URL 中提取文件名
         return fileUrl;
     }
 
     @Override
-    protected void processFile(Object inputSource, File file) throws Exception {
+    public void processFile(Object inputSource, File file) throws Exception {
         String fileUrl = (String) inputSource;
         // 下载文件到临时目录
         HttpUtil.downloadFile(fileUrl, file);

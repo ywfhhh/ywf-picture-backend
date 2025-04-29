@@ -3,6 +3,7 @@ package com.ywf.ywfpicturebackend.model.dto.picture;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 public class PictureUploadRequest implements Serializable {
@@ -17,6 +18,9 @@ public class PictureUploadRequest implements Serializable {
      */
     private String fileUrl;
 
+    private String picName;
+
+    private List<String> tags;
     private static final long serialVersionUID = 1L;
 }
 

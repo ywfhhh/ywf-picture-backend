@@ -1,26 +1,23 @@
 package com.ywf.ywfpicturebackend.model.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import java.util.Date;
 
-import lombok.Data;
-
 /**
  * 图片
- *
  * @TableName picture
  */
-@TableName(value = "picture")
+@TableName(value ="picture")
 @Data
 public class Picture {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -99,7 +96,7 @@ public class Picture {
     private Integer isDelete;
 
     /**
-     * 状态：0-待审核; 1-通过; 2-拒绝
+     * 审核状态：0-待审核; 1-通过; 2-拒绝
      */
     private Integer reviewStatus;
 
@@ -109,7 +106,7 @@ public class Picture {
     private String reviewMessage;
 
     /**
-     * 审核人 id
+     * 审核人 ID
      */
     private Long reviewerId;
 
@@ -118,4 +115,8 @@ public class Picture {
      */
     private Date reviewTime;
 
+    /**
+     * 图片md5
+     */
+    private String md5;
 }

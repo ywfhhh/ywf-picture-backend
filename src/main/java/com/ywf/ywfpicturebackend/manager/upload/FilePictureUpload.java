@@ -14,7 +14,7 @@ import java.util.List;
 public class FilePictureUpload extends PictureUploadTemplate {
 
     @Override
-    protected void validPicture(Object inputSource) {
+    public void validPicture(Object inputSource) {
         MultipartFile multipartFile = (MultipartFile) inputSource;
         ThrowUtils.throwIf(multipartFile == null, ErrorCode.PARAMS_ERROR, "文件不能为空");
         // 1. 校验文件大小
@@ -29,13 +29,13 @@ public class FilePictureUpload extends PictureUploadTemplate {
     }
 
     @Override
-    protected String getOriginFilename(Object inputSource) {
+    public String getOriginFilename(Object inputSource) {
         MultipartFile multipartFile = (MultipartFile) inputSource;
         return multipartFile.getOriginalFilename();
     }
 
     @Override
-    protected void processFile(Object inputSource, File file) throws Exception {
+    public void processFile(Object inputSource, File file) throws Exception {
         MultipartFile multipartFile = (MultipartFile) inputSource;
         multipartFile.transferTo(file);
     }

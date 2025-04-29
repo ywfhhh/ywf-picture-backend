@@ -40,4 +40,9 @@ public class UploadPictureResult {
      */
     private String picFormat;
 
+    /**
+     * md5
+     */
+
+    private String md5;
 }

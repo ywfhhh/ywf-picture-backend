@@ -1,5 +1,12 @@
 package com.ywf.ywfpicturebackend.controller;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ywf.ywfpicturebackend.annotation.AuthCheck;
@@ -10,24 +17,39 @@ import com.ywf.ywfpicturebackend.common.ResultUtils;
 import com.ywf.ywfpicturebackend.constant.UserConstant;
 import com.ywf.ywfpicturebackend.exception.BusinessException;
 import com.ywf.ywfpicturebackend.exception.ThrowUtils;
+import com.ywf.ywfpicturebackend.manager.upload.FilePictureUpload;
+import com.ywf.ywfpicturebackend.manager.upload.PictureUploadTemplate;
+import com.ywf.ywfpicturebackend.model.dto.file.UploadPictureResult;
 import com.ywf.ywfpicturebackend.model.dto.user.*;
+import com.ywf.ywfpicturebackend.model.entity.Picture;
 import com.ywf.ywfpicturebackend.model.entity.User;
 import com.ywf.ywfpicturebackend.model.vo.LoginUserVO;
+import com.ywf.ywfpicturebackend.model.vo.PictureVO;
 import com.ywf.ywfpicturebackend.model.vo.UserVO;
+import com.ywf.ywfpicturebackend.service.PictureService;
 import com.ywf.ywfpicturebackend.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.util.Date;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/user")
 public class UserController {
 
     @Resource
     private UserService userService;
+    @Resource
+    FilePictureUpload filePictureUpload;
+    @Resource
+    PictureService pictureService;
 
     /**
      * 用户注册
@@ -39,6 +61,73 @@ public class UserController {
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        return ResultUtils.success(result);
+    }
+
+    /**
+     * 用户修改
+     */
+    @PostMapping("/updateAvatar")
+    public BaseResponse<String> userUpdateAvatar(
+            @RequestPart("file") MultipartFile multipartFile,
+            HttpServletRequest request) {
+        ThrowUtils.throwIf(multipartFile == null, ErrorCode.PARAMS_ERROR);
+        User loginUser = userService.getLoginUser(request);
+        String url = getUrl(multipartFile, loginUser);
+        User user = new User();
+        user.setId(loginUser.getId());
+        user.setUserAvatar(url);
+        boolean result = userService.updateById(user);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return ResultUtils.success(url);
+    }
+
+    private String getUrl(MultipartFile multipartFile, User loginUser) {
+        String uploadPathPrefix = String.format("userAvatar/%s", loginUser.getId());
+        Picture picture = null;
+        // 1. 校验图片
+        filePictureUpload.validPicture(multipartFile);
+        // 2. 图片上传地址
+        String uuid = RandomUtil.randomString(16);
+        String originFilename = filePictureUpload.getOriginFilename(multipartFile);
+        String uploadFilename = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid,
+                FileUtil.getSuffix(originFilename));
+        String uploadPath = String.format("%s/%s", uploadPathPrefix, uploadFilename);
+        File file = null;
+        try {
+            // 3. 创建临时文件
+            file = File.createTempFile(uploadPath, null);
+            // 4.处理文件来源（本地或 URL）
+            filePictureUpload.processFile(multipartFile, file);
+            // md5判断是否上传过
+            String md5 = SecureUtil.md5(file);
+            List<Picture> samePictures = pictureService.lambdaQuery().eq(Picture::getMd5, md5).eq(Picture::getUserId, loginUser.getId()).list();
+            if (CollUtil.isNotEmpty(samePictures)) {
+                picture = samePictures.get(0);
+            }
+        } catch (Exception e) {
+            log.error("图片上传到对象存储失败", e);
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
+        }
+        if (picture != null) {
+            return picture.getUrl();
+        }
+        String picName = FileUtil.mainName(originFilename);
+        UploadPictureResult uploadPictureResult = filePictureUpload.uploadPicture(file, uploadPathPrefix, picName);
+        return uploadPictureResult.getUrl();
+    }
+
+    /**
+     * 用户修改
+     */
+    @PostMapping("/update")
+    public BaseResponse<Boolean> userUpdate(
+            @RequestBody UserUpdateRequest userUpdateRequest) {
+        ThrowUtils.throwIf(userUpdateRequest == null, ErrorCode.PARAMS_ERROR);
+        User user = new User();
+        BeanUtils.copyProperties(userUpdateRequest, user);
+        boolean result = userService.updateById(user);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
         return ResultUtils.success(result);
     }
 
@@ -126,22 +215,6 @@ public class UserController {
         }
         boolean b = userService.removeById(deleteRequest.getId());
         return ResultUtils.success(b);
-    }
-
-    /**
-     * 更新用户
-     */
-    @PostMapping("/update")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
-    public BaseResponse<Boolean> updateUser(@RequestBody UserUpdateRequest userUpdateRequest) {
-        if (userUpdateRequest == null || userUpdateRequest.getId() == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR);
-        }
-        User user = new User();
-        BeanUtils.copyProperties(userUpdateRequest, user);
-        boolean result = userService.updateById(user);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        return ResultUtils.success(true);
     }
 
     /**

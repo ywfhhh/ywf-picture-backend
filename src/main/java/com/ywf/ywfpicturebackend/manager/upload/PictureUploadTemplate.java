@@ -1,56 +1,53 @@
 package com.ywf.ywfpicturebackend.manager.upload;
 
+import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.SecureUtil;
+import cn.hutool.json.JSONUtil;
+import com.aliyun.oss.model.ObjectMetadata;
+import com.aliyun.oss.model.PutObjectRequest;
 import com.aliyun.oss.model.PutObjectResult;
 import com.ywf.ywfpicturebackend.common.ErrorCode;
 import com.ywf.ywfpicturebackend.config.AliYunCosClientConfig;
 import com.ywf.ywfpicturebackend.exception.BusinessException;
+import com.ywf.ywfpicturebackend.exception.ThrowUtils;
 import com.ywf.ywfpicturebackend.manager.CosManager;
 import com.ywf.ywfpicturebackend.model.dto.file.UploadPictureResult;
+import com.ywf.ywfpicturebackend.model.dto.picture.PictureUploadRequest;
+import com.ywf.ywfpicturebackend.model.entity.Picture;
+import com.ywf.ywfpicturebackend.model.entity.User;
+import com.ywf.ywfpicturebackend.model.vo.PictureVO;
+import com.ywf.ywfpicturebackend.service.PictureService;
+import com.ywf.ywfpicturebackend.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
 import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 public abstract class PictureUploadTemplate {
 
     @Resource
-    protected CosManager cosManager;
+    public CosManager cosManager;
 
     @Resource
-    protected AliYunCosClientConfig aliYunCosClientConfig;
+    public AliYunCosClientConfig aliYunCosClientConfig;
 
     /**
      * 模板方法，定义上传流程
      */
-    public final UploadPictureResult uploadPicture(Object inputSource, String uploadPathPrefix) {
-        // 1. 校验图片
-        validPicture(inputSource);
-
-        // 2. 图片上传地址
-        String uuid = RandomUtil.randomString(16);
-        String originFilename = getOriginFilename(inputSource);
-        String uploadFilename = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid,
-                FileUtil.getSuffix(originFilename));
-        String uploadPath = String.format("%s/%s", uploadPathPrefix, uploadFilename);
-
-        File file = null;
+    public final UploadPictureResult uploadPicture(File file, String uploadPath, String picName) {
         try {
-            // 3. 创建临时文件
-            file = File.createTempFile(uploadPath, null);
-            // 处理文件来源（本地或 URL）
-            processFile(inputSource, file);
-
-            // 4. 上传图片到对象存储并获取图片信息
             cosManager.putPictureObject(uploadPath, file);
             UploadPictureResult uploadPictureResult = cosManager.getPictureInfo(uploadPath);
             // 5. 封装返回结果
-            return buildResult(originFilename, file, uploadPath, uploadPictureResult);
+            return buildResult(picName, file, uploadPath, uploadPictureResult);
         } catch (Exception e) {
             log.error("图片上传到对象存储失败", e);
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "上传失败");
@@ -63,29 +60,47 @@ public abstract class PictureUploadTemplate {
     /**
      * 校验输入源（本地文件或 URL）
      */
-    protected abstract void validPicture(Object inputSource);
+    public abstract void validPicture(Object inputSource);
 
     /**
      * 获取输入源的原始文件名
      */
-    protected abstract String getOriginFilename(Object inputSource);
+    public abstract String getOriginFilename(Object inputSource);
 
     /**
      * 处理输入源并生成本地临时文件
      */
-    protected abstract void processFile(Object inputSource, File file) throws Exception;
+    public abstract void processFile(Object inputSource, File file) throws Exception;
+
 
     /**
      * 封装返回结果
      */
-    private UploadPictureResult buildResult(String originFilename, File file, String uploadPath, UploadPictureResult uploadPictureResult) {
+    private UploadPictureResult buildResult(String picName, File file, String
+            uploadPath, UploadPictureResult uploadPictureResult) {
         int picWidth = uploadPictureResult.getPicWidth();
         int picHeight = uploadPictureResult.getPicHeight();
         double picScale = NumberUtil.round(picWidth * 1.0 / picHeight, 2).doubleValue();
-        uploadPictureResult.setPicName(FileUtil.mainName(originFilename));
+        uploadPictureResult.setPicName(picName);
         uploadPictureResult.setPicScale(picScale);
         uploadPictureResult.setPicSize(FileUtil.size(file));
         uploadPictureResult.setUrl(aliYunCosClientConfig.getHost() + "/" + uploadPath);
+        uploadPictureResult.setMd5(SecureUtil.md5(file));
+        return uploadPictureResult;
+    }
+
+    /**
+     * 封装返回结果
+     */
+    private UploadPictureResult buildResult(Picture picture, String originFileName, String uploadPath) {
+        UploadPictureResult uploadPictureResult = new UploadPictureResult();
+        uploadPictureResult.setPicName(FileUtil.mainName(originFileName));
+        uploadPictureResult.setPicScale(picture.getPicScale());
+        uploadPictureResult.setPicSize(picture.getPicSize());
+        uploadPictureResult.setUrl(picture.getUrl());
+        uploadPictureResult.setPicScale(picture.getPicScale());
+        uploadPictureResult.setPicWidth(picture.getPicWidth());
+        uploadPictureResult.setPicHeight(picture.getPicHeight());
         return uploadPictureResult;
     }
 
