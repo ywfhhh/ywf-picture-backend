@@ -18,6 +18,11 @@ public class PictureVO implements Serializable {
     private Long id;
 
     /**
+     * spaceId
+     */
+    private Long spaceId;
+
+    /**
      * 图片 url
      */
     private String url;

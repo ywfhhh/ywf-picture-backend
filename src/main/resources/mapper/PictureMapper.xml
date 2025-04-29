@@ -26,6 +26,7 @@
         <result property="reviewerId" column="reviewerId"/>
         <result property="reviewTime" column="reviewTime"/>
         <result property="md5" column="md5"/>
+        <result property="spaceId" column="spaceId"/>
     </resultMap>
 
     <sql id="Base_Column_List">

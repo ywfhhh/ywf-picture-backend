@@ -119,4 +119,9 @@ public class Picture {
      * 图片md5
      */
     private String md5;
+
+    /**
+     * spaceId
+     */
+    private Long spaceId;
 }

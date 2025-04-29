@@ -1,26 +1,17 @@
-package com.ywf.ywfpicturebackend.model.entity;
+package com.ywf.ywfpicturebackend.model.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.ywf.ywfpicturebackend.model.vo.SpaceVO;
+import com.ywf.ywfpicturebackend.model.entity.Space;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 
+import java.io.Serializable;
 import java.util.Date;
 
-/**
- * 空间
- *
- * @TableName space
- */
-@TableName(value = "space")
 @Data
-public class Space {
+public class SpaceVO implements Serializable {
     /**
      * id
      */
-    @TableId(type = IdType.ASSIGN_ID)
     private Long id;
 
     /**
@@ -74,13 +65,40 @@ public class Space {
     private Date updateTime;
 
     /**
-     * 是否删除
+     * 创建用户信息
      */
-    private Integer isDelete;
+    private UserVO user;
 
-    public SpaceVO objToVo() {
-        SpaceVO vo = new SpaceVO();
-        BeanUtils.copyProperties(this, vo);
-        return vo;
+    private static final long serialVersionUID = 1L;
+
+    /**
+     * 封装类转对象
+     *
+     * @param spaceVO
+     * @return
+     */
+    public static Space voToObj(SpaceVO spaceVO) {
+        if (spaceVO == null) {
+            return null;
+        }
+        Space space = new Space();
+        BeanUtils.copyProperties(spaceVO, space);
+        return space;
+    }
+
+    /**
+     * 对象转封装类
+     *
+     * @param space
+     * @return
+     */
+    public static SpaceVO objToVo(Space space) {
+        if (space == null) {
+            return null;
+        }
+        SpaceVO spaceVO = new SpaceVO();
+        BeanUtils.copyProperties(space, spaceVO);
+        return spaceVO;
     }
 }
+

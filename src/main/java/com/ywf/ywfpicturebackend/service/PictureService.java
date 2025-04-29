@@ -6,10 +6,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ywf.ywfpicturebackend.model.dto.picture.PictureQueryRequest;
-import com.ywf.ywfpicturebackend.model.dto.picture.PictureReviewRequest;
-import com.ywf.ywfpicturebackend.model.dto.picture.PictureUploadByBatchRequest;
-import com.ywf.ywfpicturebackend.model.dto.picture.PictureUploadRequest;
+import com.ywf.ywfpicturebackend.model.dto.picture.*;
 import com.ywf.ywfpicturebackend.model.entity.Picture;
 import com.ywf.ywfpicturebackend.model.entity.User;
 import com.ywf.ywfpicturebackend.model.vo.PictureVO;
@@ -66,4 +63,11 @@ public interface PictureService extends IService<Picture> {
             User loginUser
     );
 
+    void checkPictureAuth(User loginUser, Picture picture);
+
+    void clearPictureFile(Picture oldPicture);
+
+    void deletePicture(long pictureId, User loginUser);
+
+    void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
 }
