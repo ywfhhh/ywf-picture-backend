@@ -1,5 +1,6 @@
 package com.ywf.ywfpicturebackend.controller;
 
+import com.ywf.ywfpicturebackend.annotation.SaSpaceCheckPermission;
 import com.ywf.ywfpicturebackend.common.BaseResponse;
 import com.ywf.ywfpicturebackend.common.ResultUtils;
 import org.springframework.web.bind.annotation.GetMapping;

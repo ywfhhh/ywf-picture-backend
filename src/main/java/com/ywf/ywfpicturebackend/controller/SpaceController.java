@@ -2,6 +2,7 @@ package com.ywf.ywfpicturebackend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ywf.ywfpicturebackend.annotation.AuthCheck;
+import com.ywf.ywfpicturebackend.auth.SpaceUserAuthManager;
 import com.ywf.ywfpicturebackend.common.BaseResponse;
 import com.ywf.ywfpicturebackend.common.ErrorCode;
 import com.ywf.ywfpicturebackend.common.ResultUtils;
@@ -12,14 +13,12 @@ import com.ywf.ywfpicturebackend.model.dto.picture.PictureQueryRequest;
 import com.ywf.ywfpicturebackend.model.dto.space.SpaceAddRequest;
 import com.ywf.ywfpicturebackend.model.dto.space.SpaceQueryRequest;
 import com.ywf.ywfpicturebackend.model.dto.space.SpaceUpdateRequest;
-import com.ywf.ywfpicturebackend.model.entity.Picture;
-import com.ywf.ywfpicturebackend.model.entity.Space;
-import com.ywf.ywfpicturebackend.model.entity.SpaceLevel;
-import com.ywf.ywfpicturebackend.model.entity.User;
+import com.ywf.ywfpicturebackend.model.entity.*;
 import com.ywf.ywfpicturebackend.model.enums.SpaceLevelEnum;
 import com.ywf.ywfpicturebackend.model.vo.SpaceVO;
 import com.ywf.ywfpicturebackend.model.vo.UserVO;
 import com.ywf.ywfpicturebackend.service.SpaceService;
+import com.ywf.ywfpicturebackend.service.SpaceUserService;
 import com.ywf.ywfpicturebackend.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -37,6 +36,8 @@ public class SpaceController {
     SpaceService spaceService;
     @Resource
     UserService userService;
+    @Resource
+    SpaceUserAuthManager spaceUserAuthManager;
 
     @PostMapping("/update")
     @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
@@ -100,14 +101,19 @@ public class SpaceController {
      * 根据 id 获取图片Vo
      */
     @GetMapping("/get/vo")
-    public BaseResponse<SpaceVO> getSpaceVoById(long id, HttpServletRequest request) {
+    public BaseResponse<SpaceVO> getSpaceVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
         Space space = spaceService.getById(id);
         ThrowUtils.throwIf(space == null, ErrorCode.NOT_FOUND_ERROR);
+        SpaceVO spaceVO = spaceService.getSpaceVO(space, request);
+        User loginUser = userService.getLoginUser(request);
+        List<String> permissionList = spaceUserAuthManager.getPermissionList(space, loginUser);
+        spaceVO.setPermissionList(permissionList);
         // 获取封装类
-        return ResultUtils.success(space.objToVo());
+        return ResultUtils.success(spaceVO);
     }
+
 
     @PostMapping("/list/page/vo")
     public BaseResponse<Page<SpaceVO>> listSpaceVoByPage(@RequestBody SpaceQueryRequest spaceQueryRequest, HttpServletRequest request) {

@@ -28,4 +28,6 @@ public interface SpaceService extends IService<Space> {
     Wrapper<Space> getQueryWrapper(SpaceQueryRequest spaceQueryRequest);
 
     Page<SpaceVO> getSpaceVOPage(Page<Space> spacePage, HttpServletRequest request);
+
+    SpaceVO getSpaceVO(Space space, HttpServletRequest request);
 }

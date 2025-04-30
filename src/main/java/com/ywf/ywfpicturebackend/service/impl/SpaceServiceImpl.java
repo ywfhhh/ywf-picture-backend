@@ -13,13 +13,19 @@ import com.ywf.ywfpicturebackend.exception.ThrowUtils;
 import com.ywf.ywfpicturebackend.mapper.SpaceMapper;
 import com.ywf.ywfpicturebackend.model.dto.space.SpaceAddRequest;
 import com.ywf.ywfpicturebackend.model.dto.space.SpaceQueryRequest;
+import com.ywf.ywfpicturebackend.model.dto.spaceuser.SpaceUserAddRequest;
 import com.ywf.ywfpicturebackend.model.entity.Picture;
 import com.ywf.ywfpicturebackend.model.entity.Space;
+import com.ywf.ywfpicturebackend.model.entity.SpaceUser;
 import com.ywf.ywfpicturebackend.model.entity.User;
 import com.ywf.ywfpicturebackend.model.enums.SpaceLevelEnum;
+import com.ywf.ywfpicturebackend.model.enums.SpaceRoleEnum;
+import com.ywf.ywfpicturebackend.model.enums.SpaceTypeEnum;
 import com.ywf.ywfpicturebackend.model.vo.PictureVO;
 import com.ywf.ywfpicturebackend.model.vo.SpaceVO;
+import com.ywf.ywfpicturebackend.model.vo.UserVO;
 import com.ywf.ywfpicturebackend.service.SpaceService;
+import com.ywf.ywfpicturebackend.service.SpaceUserService;
 import com.ywf.ywfpicturebackend.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -27,10 +33,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
@@ -46,6 +49,8 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
     private TransactionTemplate transactionTemplate;
     @Resource
     private UserService userService;
+    @Resource
+    private SpaceUserService spaceUserService;
     private ConcurrentHashMap<Long, Object> locks = new ConcurrentHashMap<>();
 
     @Override
@@ -54,23 +59,22 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         // 从对象中取值
         String spaceName = space.getSpaceName();
         Integer spaceLevel = space.getSpaceLevel();
+        Integer spaceType = space.getSpaceType();
         SpaceLevelEnum spaceLevelEnum = SpaceLevelEnum.getEnumByValue(spaceLevel);
         // 要创建
         if (add) {
-            if (StrUtil.isBlank(spaceName)) {
+            if (StrUtil.isBlank(spaceName))
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间名称不能为空");
-            }
-            if (spaceLevel == null) {
+            if (spaceLevel == null)
                 throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间级别不能为空");
-            }
+            if (spaceType == null)
+                throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间类型不存在");
         }
         // 修改数据时，如果要改空间级别
-        if (spaceLevel != null && spaceLevelEnum == null) {
+        if (spaceLevel != null && spaceLevelEnum == null)
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间级别不存在");
-        }
-        if (StrUtil.isNotBlank(spaceName) && spaceName.length() > 30) {
+        if (StrUtil.isNotBlank(spaceName) && spaceName.length() > 30)
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "空间名称过长");
-        }
     }
 
     @Override
@@ -93,19 +97,24 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
     @Override
     public Long addSpace(SpaceAddRequest spaceAddRequest, User loginUser) {
         // 在此处将实体类和 DTO 进行转换
-        Space space = new Space();
-        BeanUtils.copyProperties(spaceAddRequest, space);
         // 默认值
         if (StrUtil.isBlank(spaceAddRequest.getSpaceName())) {
-            space.setSpaceName("默认空间");
+            spaceAddRequest.setSpaceName("默认空间");
         }
         if (spaceAddRequest.getSpaceLevel() == null) {
-            space.setSpaceLevel(SpaceLevelEnum.COMMON.getValue());
+            spaceAddRequest.setSpaceLevel(SpaceLevelEnum.COMMON.getValue());
         }
+        if (spaceAddRequest.getSpaceType() == null) {
+            spaceAddRequest.setSpaceType(SpaceTypeEnum.PRIVATE.getValue());
+        }
+        // 在此处将实体类和 DTO 进行转换
+        Space space = new Space();
+        BeanUtils.copyProperties(spaceAddRequest, space);
         // 填充数据
         this.fillSpaceBySpaceLevel(space);
         // 数据校验
         this.validSpace(space, true);
+        Integer spaceType = space.getSpaceType();
         Long userId = loginUser.getId();
         space.setUserId(userId);
         // 权限校验
@@ -117,11 +126,19 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         synchronized (lock) {
             try {
                 Long newSpaceId = transactionTemplate.execute(status -> {
-                    boolean exists = this.lambdaQuery().eq(Space::getUserId, userId).exists();
+                    boolean exists = this.lambdaQuery().eq(Space::getUserId, userId).eq(Space::getSpaceType, spaceType).exists();
                     ThrowUtils.throwIf(exists, ErrorCode.OPERATION_ERROR, "每个用户仅能有一个私有空间");
                     // 写入数据库
                     boolean result = this.save(space);
                     ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+                    if (spaceAddRequest.getSpaceType() == SpaceTypeEnum.TEAM.getValue()) {
+                        // 将创建者加入空间作为空间管理员
+                        SpaceUserAddRequest spaceUserAddRequest = new SpaceUserAddRequest();
+                        spaceUserAddRequest.setSpaceId(space.getId());
+                        spaceUserAddRequest.setUserId(userId);
+                        spaceUserAddRequest.setSpaceRole(SpaceRoleEnum.ADMIN.getValue());
+                        spaceUserService.addSpaceUser(spaceUserAddRequest);
+                    }
                     // 返回新写入的数据 id
                     return space.getId();
                 });
@@ -141,10 +158,12 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         String spaceName = spaceQueryRequest.getSpaceName();
         Long userId = spaceQueryRequest.getUserId();
         Long id = spaceQueryRequest.getId();
+        Integer spaceType = spaceQueryRequest.getSpaceType();
         queryWrapper.eq(ObjectUtil.isNotNull(id), "id", id);
         queryWrapper.eq(ObjectUtil.isNotNull(spaceLevel), "spaceLevel", spaceLevel);
         queryWrapper.eq(StrUtil.isNotBlank(spaceName), "spaceName", spaceName);
         queryWrapper.eq(ObjectUtil.isNotNull(userId), "userId", userId);
+        queryWrapper.eq(ObjectUtil.isNotNull(spaceType), "spaceType", spaceType);
         return queryWrapper;
     }
 
@@ -156,7 +175,10 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
             return spaceVOPage;
         }
         // 对象列表 => 封装对象列表
-        List<SpaceVO> spaceVOList = spaceList.stream().map(Space::objToVo).collect(Collectors.toList());
+        List<SpaceVO> spaceVOList = spaceList.stream().map(space -> {
+            SpaceVO spaceVO = SpaceVO.objToVo(space);
+            return spaceVO;
+        }).collect(Collectors.toList());
         // 1. 关联查询用户信息
         Set<Long> userIdSet = spaceList.stream().map(Space::getUserId).collect(Collectors.toSet());
         Map<Long, List<User>> userIdUserListMap = userService.listByIds(userIdSet).stream()
@@ -172,6 +194,16 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         });
         spaceVOPage.setRecords(spaceVOList);
         return spaceVOPage;
+    }
+
+    @Override
+    public SpaceVO getSpaceVO(Space space, HttpServletRequest request) {
+        SpaceVO spaceVO = SpaceVO.objToVo(space);
+        User user = userService.getById(space.getUserId());
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        spaceVO.setUser(userVO);
+        return spaceVO;
     }
 
 }

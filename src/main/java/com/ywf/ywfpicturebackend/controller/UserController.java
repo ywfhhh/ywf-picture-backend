@@ -10,6 +10,7 @@ import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ywf.ywfpicturebackend.annotation.AuthCheck;
+import com.ywf.ywfpicturebackend.auth.StpKit;
 import com.ywf.ywfpicturebackend.common.BaseResponse;
 import com.ywf.ywfpicturebackend.common.DeleteRequest;
 import com.ywf.ywfpicturebackend.common.ErrorCode;
@@ -150,7 +151,11 @@ public class UserController {
         if (!loginUser.getUserPassword().equals(userService.getEncryptPassword(userPassword))) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户密码错误!");
         }
+        // 3. 记录用户的登录态
         request.getSession().setAttribute(UserConstant.USER_LOGIN_STATE, loginUser);
+        // 4. 记录用户登录态到 Sa-token，便于空间鉴权时使用，注意保证该用户信息与 SpringSession 中的信息过期时间一致
+        StpKit.SPACE.login(loginUser.getId());
+        StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, loginUser);
         LoginUserVO loginUserVO = userService.getLoginUserVO(loginUser);
         return ResultUtils.success(loginUserVO);
     }
@@ -159,6 +164,7 @@ public class UserController {
     @PostMapping("/logout")
     public BaseResponse<Boolean> userLogout(HttpServletRequest request) {
         ThrowUtils.throwIf(request == null, ErrorCode.PARAMS_ERROR);
+
         boolean result = userService.userLogout(request);
         return ResultUtils.success(result);
     }

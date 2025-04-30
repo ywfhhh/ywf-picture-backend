@@ -5,7 +5,7 @@ import lombok.Getter;
 
 @Getter
 public enum UserRoleEnum {
-
+    GUEST("游客", "guest"),
     USER("用户", "user"),
     ADMIN("管理员", "admin");
 

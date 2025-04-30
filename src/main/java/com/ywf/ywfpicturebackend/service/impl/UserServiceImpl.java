@@ -1,9 +1,11 @@
 package com.ywf.ywfpicturebackend.service.impl;
 
+import cn.dev33.satoken.stp.StpUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ywf.ywfpicturebackend.auth.StpKit;
 import com.ywf.ywfpicturebackend.common.ErrorCode;
 import com.ywf.ywfpicturebackend.constant.UserConstant;
 import com.ywf.ywfpicturebackend.exception.BusinessException;
@@ -105,8 +107,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (userObj == null) {
             throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
         }
+        User loginUser = (User) userObj;
         // 移除登录态
         request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
+        StpKit.SPACE.logout(loginUser.getId());
         return true;
     }
 

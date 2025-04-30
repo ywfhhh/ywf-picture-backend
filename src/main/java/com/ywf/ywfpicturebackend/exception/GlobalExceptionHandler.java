@@ -1,5 +1,7 @@
 package com.ywf.ywfpicturebackend.exception;
 
+import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
 import com.ywf.ywfpicturebackend.common.BaseResponse;
 import com.ywf.ywfpicturebackend.common.ErrorCode;
 import com.ywf.ywfpicturebackend.common.ResultUtils;
@@ -11,7 +13,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
  * 全局异常处理器
  *
  * @author <a href="https://github.com/ywfhhh">ywfhhh</a>
- * 
  */
 @RestControllerAdvice
 @Slf4j
@@ -28,4 +29,17 @@ public class GlobalExceptionHandler {
         log.error("RuntimeException", e);
         return ResultUtils.error(ErrorCode.SYSTEM_ERROR, "系统错误");
     }
+    // SaToken框架抛出的异常
+    @ExceptionHandler(NotLoginException.class)
+    public BaseResponse<?> notLoginException(NotLoginException e) {
+        log.error("NotLoginException", e);
+        return ResultUtils.error(ErrorCode.NOT_LOGIN_ERROR, e.getMessage());
+    }
+
+    @ExceptionHandler(NotPermissionException.class)
+    public BaseResponse<?> notPermissionExceptionHandler(NotPermissionException e) {
+        log.error("NotPermissionException", e);
+        return ResultUtils.error(ErrorCode.NO_AUTH_ERROR, e.getMessage());
+    }
+
 }

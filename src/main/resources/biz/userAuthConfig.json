@@ -1,0 +1,78 @@
+{
+  "permissions": [
+    {
+      "key": "picture:manage",
+      "name": "图片管理",
+      "description": "管理图片，添加或移除图片"
+    },
+    {
+      "key": "picture:view",
+      "name": "查看图片",
+      "description": "查看空图片内容"
+    },
+    {
+      "key": "picture:upload",
+      "name": "上传图片",
+      "description": "上传图片"
+    },
+    {
+      "key": "picture:edit",
+      "name": "修改图片",
+      "description": "编辑已上传的图片信息"
+    },
+    {
+      "key": "picture:delete",
+      "name": "删除图片",
+      "description": "删除图片"
+    },
+    {
+      "key": "picture:review",
+      "name": "审核图片",
+      "description": "审核图片"
+    }
+  ],
+  "roles": [
+    {
+      "key": "guest",
+      "name": "游客",
+      "permissions": [
+        "picture:view"
+      ],
+      "description": "查看图片"
+    },
+    {
+      "key": "user",
+      "name": "普通用户",
+      "permissions": [
+        "picture:view",
+        "picture:upload",
+        "picture:edit",
+        "picture:delete"
+      ],
+      "description": "查看图片、上传图片、修改图片、删除图片"
+    },
+    {
+      "key": "reviewer",
+      "name": "审核员",
+      "permissions": [
+        "picture:manage",
+        "picture:view",
+        "picture:review"
+      ],
+      "description": "查看图片、审核图片"
+    },
+    {
+      "key": "admin",
+      "name": "管理员",
+      "permissions": [
+        "picture:manage",
+        "picture:view",
+        "picture:upload",
+        "picture:edit",
+        "picture:delete",
+        "picture:review"
+      ],
+      "description": "图片管理、查看图片、上传图片、修改图片、删除图片、审核图片"
+    }
+  ]
+}
