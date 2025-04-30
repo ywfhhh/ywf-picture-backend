@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.ywf.ywfpicturebackend.common.ErrorCode;
 import com.ywf.ywfpicturebackend.exception.BusinessException;
 import com.ywf.ywfpicturebackend.exception.ThrowUtils;
+import com.ywf.ywfpicturebackend.manager.sharding.DynamicShardingManager;
 import com.ywf.ywfpicturebackend.mapper.SpaceMapper;
 import com.ywf.ywfpicturebackend.model.dto.space.SpaceAddRequest;
 import com.ywf.ywfpicturebackend.model.dto.space.SpaceQueryRequest;
@@ -28,6 +29,7 @@ import com.ywf.ywfpicturebackend.service.SpaceService;
 import com.ywf.ywfpicturebackend.service.SpaceUserService;
 import com.ywf.ywfpicturebackend.service.UserService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
@@ -51,6 +53,10 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
     private UserService userService;
     @Resource
     private SpaceUserService spaceUserService;
+
+    @Resource
+    @Lazy
+    private DynamicShardingManager dynamicShardingManager;
     private ConcurrentHashMap<Long, Object> locks = new ConcurrentHashMap<>();
 
     @Override
@@ -127,7 +133,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
             try {
                 Long newSpaceId = transactionTemplate.execute(status -> {
                     boolean exists = this.lambdaQuery().eq(Space::getUserId, userId).eq(Space::getSpaceType, spaceType).exists();
-                    ThrowUtils.throwIf(exists, ErrorCode.OPERATION_ERROR, "每个用户仅能有一个私有空间");
+                    ThrowUtils.throwIf(spaceType == 0 && exists, ErrorCode.OPERATION_ERROR, "每个用户仅能有一个私有空间");
                     // 写入数据库
                     boolean result = this.save(space);
                     ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
@@ -139,6 +145,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
                         spaceUserAddRequest.setSpaceRole(SpaceRoleEnum.ADMIN.getValue());
                         spaceUserService.addSpaceUser(spaceUserAddRequest);
                     }
+                    dynamicShardingManager.createSpacePictureTable(space);
                     // 返回新写入的数据 id
                     return space.getId();
                 });

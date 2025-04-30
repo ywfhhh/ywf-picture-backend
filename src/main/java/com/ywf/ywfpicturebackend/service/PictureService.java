@@ -67,7 +67,7 @@ public interface PictureService extends IService<Picture> {
 
     void clearPictureFile(Picture oldPicture);
 
-    void deletePicture(long pictureId, User loginUser);
+    boolean deletePicture(PictureDeleteRequest pictureDeleteRequest, User loginUser);
 
-    void editPicture(PictureEditRequest pictureEditRequest, User loginUser);
+    boolean editPicture(PictureEditRequest pictureEditRequest, User loginUser);
 }

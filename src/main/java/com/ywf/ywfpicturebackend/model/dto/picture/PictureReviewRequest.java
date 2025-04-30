@@ -22,7 +22,10 @@ public class PictureReviewRequest implements Serializable {
      */
     private String reviewMessage;
 
-
+    /**
+     * 所属图库
+     */
+    private Long spaceId;
     private static final long serialVersionUID = 1L;
 }
 

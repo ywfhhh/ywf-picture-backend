@@ -157,7 +157,7 @@ public class StpInterfaceImpl implements StpInterface {
         // 如果没有 spaceUserId，尝试通过 spaceId 或 pictureId 获取 Space 对象并处理
         Long spaceId = authContext.getSpaceId();
         if (spaceId == null) {
-            // 如果没有 spaceId，通过 pictureId 获取 Picture 对象和 Space 对象
+            // 如果spaceId==0，通过 pictureId 获取 Picture 对象和 Space 对象
             Long pictureId = authContext.getPictureId();
             // 图片 id 也没有，则默认通过权限校验
             if (pictureId == null) {
@@ -173,7 +173,7 @@ public class StpInterfaceImpl implements StpInterface {
             }
             spaceId = picture.getSpaceId();
             // 公共图库，仅本人或管理员可操作
-            if (spaceId == null) {
+            if (spaceId == 0) {
                 if (picture.getUserId().equals(loginUser.getId()) || userService.isAdmin(loginUser)) {
                     USER_ALL_PERMISSIONS.addAll(spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue()));
                     return USER_ALL_PERMISSIONS;
