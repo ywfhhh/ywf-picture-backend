@@ -6,7 +6,6 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.SecureUtil;
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ywf.ywfpicturebackend.annotation.AuthCheck;
@@ -18,17 +17,16 @@ import com.ywf.ywfpicturebackend.common.ResultUtils;
 import com.ywf.ywfpicturebackend.constant.UserConstant;
 import com.ywf.ywfpicturebackend.exception.BusinessException;
 import com.ywf.ywfpicturebackend.exception.ThrowUtils;
-import com.ywf.ywfpicturebackend.manager.upload.FilePictureUpload;
-import com.ywf.ywfpicturebackend.manager.upload.PictureUploadTemplate;
+import com.ywf.ywfpicturebackend.manager.upload.TxYunFilePictureUpload;
 import com.ywf.ywfpicturebackend.model.dto.file.UploadPictureResult;
 import com.ywf.ywfpicturebackend.model.dto.user.*;
 import com.ywf.ywfpicturebackend.model.entity.Picture;
 import com.ywf.ywfpicturebackend.model.entity.User;
 import com.ywf.ywfpicturebackend.model.vo.LoginUserVO;
-import com.ywf.ywfpicturebackend.model.vo.PictureVO;
 import com.ywf.ywfpicturebackend.model.vo.UserVO;
 import com.ywf.ywfpicturebackend.service.PictureService;
 import com.ywf.ywfpicturebackend.service.UserService;
+import com.ywf.ywfpicturebackend.utils.ImageUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.awt.*;
 import java.io.File;
 import java.util.Date;
 import java.util.List;
@@ -48,7 +47,7 @@ public class UserController {
     @Resource
     private UserService userService;
     @Resource
-    FilePictureUpload filePictureUpload;
+    TxYunFilePictureUpload filePictureUpload;
     @Resource
     PictureService pictureService;
 
@@ -91,18 +90,19 @@ public class UserController {
         // 2. 图片上传地址
         String uuid = RandomUtil.randomString(16);
         String originFilename = filePictureUpload.getOriginFilename(multipartFile);
-        String uploadFilename = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid,
-                FileUtil.getSuffix(originFilename));
-        String uploadPath = String.format("%s/%s", uploadPathPrefix, uploadFilename);
         File file = null;
+        String extName;
         try {
             // 3. 创建临时文件
-            file = File.createTempFile(uploadPath, null);
+            file = File.createTempFile(uuid, null);
             // 4.处理文件来源（本地或 URL）
             filePictureUpload.processFile(multipartFile, file);
+            extName = FileUtil.extName(file);
+            if (StrUtil.isBlank(extName) || !ImageUtils.validExtName(extName))
+                extName = ImageUtils.getFileExtension(file);
             // md5判断是否上传过
             String md5 = SecureUtil.md5(file);
-            List<Picture> samePictures = pictureService.lambdaQuery().eq(Picture::getMd5, md5).eq(Picture::getUserId, loginUser.getId()).list();
+            List<Picture> samePictures = pictureService.lambdaQuery().eq(Picture::getMd5, md5).eq(Picture::getUserId, loginUser.getId()).eq(Picture::getSpaceId, 0L).list();
             if (CollUtil.isNotEmpty(samePictures)) {
                 picture = samePictures.get(0);
             }
@@ -114,7 +114,9 @@ public class UserController {
             return picture.getUrl();
         }
         String picName = FileUtil.mainName(originFilename);
-        UploadPictureResult uploadPictureResult = filePictureUpload.uploadPicture(file, uploadPathPrefix, picName);
+        String uploadFilename = String.format("%s_%s.%s", DateUtil.formatDate(new Date()), uuid, extName);
+        String uploadPath = String.format("%s/%s", uploadPathPrefix, uploadFilename);
+        UploadPictureResult uploadPictureResult = filePictureUpload.uploadPicture(file, uploadPath, picName);
         return uploadPictureResult.getUrl();
     }
 

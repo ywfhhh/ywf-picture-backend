@@ -4,6 +4,7 @@ import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.ywf.ywfpicturebackend.model.entity.*;
+import com.ywf.ywfpicturebackend.model.entity.auth.SpaceUserAuthConfig;
 import com.ywf.ywfpicturebackend.model.enums.SpaceRoleEnum;
 import com.ywf.ywfpicturebackend.model.enums.SpaceTypeEnum;
 import com.ywf.ywfpicturebackend.service.SpaceUserService;

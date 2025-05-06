@@ -4,25 +4,15 @@ import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
 import com.ywf.ywfpicturebackend.model.entity.*;
-import com.ywf.ywfpicturebackend.model.enums.SpaceRoleEnum;
-import com.ywf.ywfpicturebackend.model.enums.SpaceTypeEnum;
-import com.ywf.ywfpicturebackend.service.PictureService;
-import com.ywf.ywfpicturebackend.service.SpaceUserService;
-import com.ywf.ywfpicturebackend.service.UserService;
+import com.ywf.ywfpicturebackend.model.entity.auth.UserAuthConfig;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Component
 public class UserAuthManager {
-
-    @Resource
-    private PictureService pictureService;
-
-    @Resource
-    private UserService userService;
 
     public static final UserAuthConfig USER_AUTH_CONFIG;
 
@@ -48,9 +38,13 @@ public class UserAuthManager {
         }
         return commonRole.getPermissions();
     }
+
     // 根据xx获取权限列表
     public List<String> getPermissionList(User loginUser) {
-        return new ArrayList<>();
+        if (loginUser == null) {
+            return new ArrayList<>();
+        }
+        return getPermissionsByRole(loginUser.getUserRole());
     }
 
 }

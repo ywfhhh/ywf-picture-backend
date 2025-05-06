@@ -3,15 +3,15 @@ package com.ywf.ywfpicturebackend.service;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import com.ywf.ywfpicturebackend.model.dto.space.SpaceAddRequest;
-import com.ywf.ywfpicturebackend.model.dto.space.SpaceQueryRequest;
-import com.ywf.ywfpicturebackend.model.entity.Picture;
+import com.ywf.ywfpicturebackend.model.dto.space.*;
+import com.ywf.ywfpicturebackend.model.dto.space.analyze.*;
 import com.ywf.ywfpicturebackend.model.entity.Space;
 import com.ywf.ywfpicturebackend.model.entity.User;
-import com.ywf.ywfpicturebackend.model.vo.PictureVO;
 import com.ywf.ywfpicturebackend.model.vo.SpaceVO;
+import com.ywf.ywfpicturebackend.model.vo.space.analyze.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author yiwenfeng
@@ -30,4 +30,16 @@ public interface SpaceService extends IService<Space> {
     Page<SpaceVO> getSpaceVOPage(Page<Space> spacePage, HttpServletRequest request);
 
     SpaceVO getSpaceVO(Space space, HttpServletRequest request);
+
+    SpaceUsageAnalyzeResponse getSpaceUsageAnalyze(SpaceUsageAnalyzeRequest spaceUsageAnalyzeRequest, User loginUser);
+
+    List<SpaceCategoryAnalyzeResponse> getSpaceCategoryAnalyze(SpaceCategoryAnalyzeRequest spaceCategoryAnalyzeRequest, User loginUser);
+
+    List<SpaceTagAnalyzeResponse> getSpaceTagAnalyze(SpaceTagAnalyzeRequest spaceTagAnalyzeRequest, User loginUser);
+
+    List<SpaceSizeAnalyzeResponse> getSpaceSizeAnalyze(SpaceSizeAnalyzeRequest spaceSizeAnalyzeRequest, User loginUser);
+
+    List<SpaceUserAnalyzeResponse> getSpaceUserAnalyze(SpaceUserAnalyzeRequest spaceUserAnalyzeRequest, User loginUser);
+
+    List<Space> getSpaceRankAnalyze(SpaceRankAnalyzeRequest spaceRankAnalyzeRequest, User loginUser);
 }

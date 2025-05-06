@@ -2,10 +2,12 @@ package com.ywf.ywfpicturebackend.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ywf.ywfpicturebackend.annotation.AuthCheck;
+import com.ywf.ywfpicturebackend.annotation.SaSpaceCheckPermission;
 import com.ywf.ywfpicturebackend.auth.SpaceUserAuthManager;
 import com.ywf.ywfpicturebackend.common.BaseResponse;
 import com.ywf.ywfpicturebackend.common.ErrorCode;
 import com.ywf.ywfpicturebackend.common.ResultUtils;
+import com.ywf.ywfpicturebackend.constant.SpacePermissionConstant;
 import com.ywf.ywfpicturebackend.constant.UserConstant;
 import com.ywf.ywfpicturebackend.exception.BusinessException;
 import com.ywf.ywfpicturebackend.exception.ThrowUtils;
@@ -40,7 +42,7 @@ public class SpaceController {
     SpaceUserAuthManager spaceUserAuthManager;
 
     @PostMapping("/update")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @SaSpaceCheckPermission(value = SpacePermissionConstant.SPACE_MANAGE)
     public BaseResponse<Boolean> updateSpace(@RequestBody SpaceUpdateRequest spaceUpdateRequest) {
         if (spaceUpdateRequest == null || spaceUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -63,7 +65,7 @@ public class SpaceController {
     }
 
     @PostMapping("/add")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @SaSpaceCheckPermission(value = SpacePermissionConstant.SPACE_ADD)
     public BaseResponse<Long> addSpace(@RequestBody SpaceAddRequest spaceAddRequest, HttpServletRequest request) {
         if (spaceAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
@@ -88,6 +90,7 @@ public class SpaceController {
      * 根据 id 获取图片
      */
     @GetMapping("/get")
+    @SaSpaceCheckPermission(value = SpacePermissionConstant.SPACE_MANAGE)
     public BaseResponse<Space> getSpaceById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
@@ -101,6 +104,7 @@ public class SpaceController {
      * 根据 id 获取图片Vo
      */
     @GetMapping("/get/vo")
+    @SaSpaceCheckPermission(value = SpacePermissionConstant.SPACE_VIEW)
     public BaseResponse<SpaceVO> getSpaceVOById(long id, HttpServletRequest request) {
         ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
         // 查询数据库
@@ -116,6 +120,7 @@ public class SpaceController {
 
 
     @PostMapping("/list/page/vo")
+    @SaSpaceCheckPermission(value = SpacePermissionConstant.SPACE_VIEW)
     public BaseResponse<Page<SpaceVO>> listSpaceVoByPage(@RequestBody SpaceQueryRequest spaceQueryRequest, HttpServletRequest request) {
         if (spaceQueryRequest == null) throw new BusinessException(ErrorCode.PARAMS_ERROR);
         long current = spaceQueryRequest.getCurrent();
@@ -131,7 +136,7 @@ public class SpaceController {
      * 分页获取图片列表（仅管理员可用）
      */
     @PostMapping("/list/page")
-    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    @SaSpaceCheckPermission(value = SpacePermissionConstant.SPACE_MANAGE)
     public BaseResponse<Page<Space>> listSpaceByPage(@RequestBody SpaceQueryRequest spaceQueryRequest) {
         long current = spaceQueryRequest.getCurrent();
         long size = spaceQueryRequest.getPageSize();

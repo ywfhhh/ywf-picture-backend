@@ -36,4 +36,21 @@
         userId,createTime,editTime,updateTime,isDelete,
         reviewStatus,reviewMessage,reviewerId,reviewTime,md5
     </sql>
+    <update id="updateByShardingKey" parameterType="com.ywf.ywfpicturebackend.model.entity.Picture">
+        UPDATE picture
+        <set>
+            <if test="picture.tags    != null">tags     = #{picture.tags},</if>
+            <if test="picture.name    != null">name     = #{picture.name},</if>
+            <if test="picture.category!= null">category = #{picture.category},</if>
+        </set>
+        WHERE id = #{picture.id} AND spaceId = #{picture.spaceId}
+    </update>
+    <update id="updatePictureReviewStatus" parameterType="com.ywf.ywfpicturebackend.model.entity.Picture">
+        update picture
+        <set>
+            <if test="picture.reviewStatus != null">reviewStatus = #{picture.reviewStatus},</if>
+            <if test="picture.reviewMessage != null">reviewMessage = #{picture.reviewMessage},</if>
+        </set>
+        where id = ${picture.id} and spaceId = #{picture.spaceId}
+    </update>
 </mapper>

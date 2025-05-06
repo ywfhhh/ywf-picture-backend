@@ -1,16 +1,13 @@
 package com.ywf.ywfpicturebackend.controller;
 
-import com.aliyun.oss.OSSClient;
 import com.aliyun.oss.model.OSSObject;
-import com.aliyun.oss.model.PutObjectResult;
 import com.ywf.ywfpicturebackend.annotation.AuthCheck;
 import com.ywf.ywfpicturebackend.common.BaseResponse;
 import com.ywf.ywfpicturebackend.common.ErrorCode;
 import com.ywf.ywfpicturebackend.common.ResultUtils;
 import com.ywf.ywfpicturebackend.constant.UserConstant;
 import com.ywf.ywfpicturebackend.exception.BusinessException;
-import com.ywf.ywfpicturebackend.manager.CosManager;
-import com.ywf.ywfpicturebackend.model.dto.file.UploadPictureResult;
+import com.ywf.ywfpicturebackend.manager.AliYunCosManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,7 +25,7 @@ import java.io.InputStream;
 public class FileController {
 
     @Resource
-    CosManager cosManager;
+    AliYunCosManager cosManager;
 
     /**
      * 测试文件上传

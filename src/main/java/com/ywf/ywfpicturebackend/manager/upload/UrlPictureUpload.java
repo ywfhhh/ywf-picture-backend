@@ -1,6 +1,5 @@
 package com.ywf.ywfpicturebackend.manager.upload;
 
-import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpStatus;
@@ -9,19 +8,15 @@ import cn.hutool.http.Method;
 import com.ywf.ywfpicturebackend.common.ErrorCode;
 import com.ywf.ywfpicturebackend.exception.BusinessException;
 import com.ywf.ywfpicturebackend.exception.ThrowUtils;
-import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 
-@Service
-public class UrlPictureUpload extends PictureUploadTemplate {
+public abstract class UrlPictureUpload extends PictureUploadTemplate {
     private HashMap<String, String> mapContentTypeToExt = new HashMap<>();
 
     public UrlPictureUpload() {

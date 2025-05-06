@@ -43,6 +43,10 @@ public class UploadPictureResult {
     /**
      * md5
      */
-
     private String md5;
+
+    /**
+     * 图片主色调
+     */
+    private String picColor;
 }

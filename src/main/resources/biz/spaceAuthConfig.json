@@ -1,0 +1,68 @@
+{
+  "permissions": [
+    {
+      "key": "space:manage",
+      "name": "空间管理",
+      "description": "管理空间，添加或移除空间"
+    },
+    {
+      "key": "space:view",
+      "name": "查看空间",
+      "description": "查看空间内容"
+    },
+    {
+      "key": "space:add",
+      "name": "创建空间",
+      "description": "创建空间"
+    },
+    {
+      "key": "space:edit",
+      "name": "修改空间",
+      "description": "编辑已上传的空间信息"
+    },
+    {
+      "key": "space:delete",
+      "name": "删除空间",
+      "description": "删除空间"
+    }
+  ],
+  "roles": [
+    {
+      "key": "guest",
+      "name": "游客",
+      "permissions": [
+      ],
+      "description": "查看空间"
+    },
+    {
+      "key": "user",
+      "name": "普通用户",
+      "permissions": [
+        "space:view",
+        "space:add"
+      ],
+      "description": "查看空间、创建空间、删除空间"
+    },
+    {
+      "key": "reviewer",
+      "name": "审核人员",
+      "permissions": [
+        "space:view",
+        "space:add"
+      ],
+      "description": "查看空间、创建空间"
+    },
+    {
+      "key": "admin",
+      "name": "管理员",
+      "permissions": [
+        "space:manage",
+        "space:add",
+        "space:edit",
+        "space:delete",
+        "space:view"
+      ],
+      "description": "空间管理、查看空间、修改空间、删除空间"
+    }
+  ]
+}

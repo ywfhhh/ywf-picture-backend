@@ -10,8 +10,7 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 
-@Service
-public class FilePictureUpload extends PictureUploadTemplate {
+public abstract class FilePictureUpload extends PictureUploadTemplate {
 
     @Override
     public void validPicture(Object inputSource) {

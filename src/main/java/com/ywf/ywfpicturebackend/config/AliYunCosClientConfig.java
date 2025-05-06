@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConfigurationProperties(prefix = "cos.client")
+@ConfigurationProperties(prefix = "aliyun-cos.client")
 @Data
 public class AliYunCosClientConfig {
 
@@ -50,7 +50,7 @@ public class AliYunCosClientConfig {
     private String host;
 
     @Bean
-    public OSS cosClient() {
+    public OSS aliYunCosClient() {
         // 使用DefaultCredentialProvider方法直接设置AK和SK
         CredentialsProvider credentialsProvider = new DefaultCredentialProvider(accessKeyId, accessKeySecret);
         // 使用credentialsProvider初始化客户端

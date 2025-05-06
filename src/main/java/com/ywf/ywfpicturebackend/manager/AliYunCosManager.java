@@ -12,13 +12,13 @@ import javax.annotation.Resource;
 import java.io.*;
 
 @Component
-public class CosManager {
+public class AliYunCosManager {
 
     @Resource
     private AliYunCosClientConfig aliYunCosClientConfig;
 
     @Resource
-    private OSS cosClient;
+    private OSS aliYunCosClient;
 
     /**
      * 上传对象
@@ -29,7 +29,7 @@ public class CosManager {
     public PutObjectResult putObject(String objectName, File file) {
         PutObjectRequest putObjectRequest = new PutObjectRequest(aliYunCosClientConfig.getBucketName(), objectName,
                 file);
-        return cosClient.putObject(putObjectRequest);
+        return aliYunCosClient.putObject(putObjectRequest);
     }
 
     /**
@@ -39,7 +39,7 @@ public class CosManager {
      */
     public OSSObject getObject(String objectName) {
         GetObjectRequest getObjectRequest = new GetObjectRequest(aliYunCosClientConfig.getBucketName(), objectName);
-        return cosClient.getObject(getObjectRequest);
+        return aliYunCosClient.getObject(getObjectRequest);
     }
 
     /**
@@ -51,7 +51,7 @@ public class CosManager {
     public PutObjectResult putPictureObject(String ObjectName, File file) {
         PutObjectRequest putObjectRequest = new PutObjectRequest(aliYunCosClientConfig.getBucketName(), ObjectName,
                 file);
-        return cosClient.putObject(putObjectRequest);
+        return aliYunCosClient.putObject(putObjectRequest);
     }
 
     /**
@@ -62,7 +62,7 @@ public class CosManager {
         GetObjectRequest req = new GetObjectRequest(aliYunCosClientConfig.getBucketName(), objectName);
         req.setProcess("image/info");
         // 5. 执行请求，返回的是一个 OSSObject（其 content 流里是一段 JSON）
-        OSSObject obj = cosClient.getObject(req);
+        OSSObject obj = aliYunCosClient.getObject(req);
         UploadPictureResult uploadPictureResult = new UploadPictureResult();
         try (InputStream in = obj.getObjectContent()) {
             ObjectMapper objectMapper = new ObjectMapper();
@@ -82,7 +82,7 @@ public class CosManager {
      * @param key 文件 key
      */
     public void deleteObject(String key) {
-        cosClient.deleteObject(aliYunCosClientConfig.getBucketName(), key);
+        aliYunCosClient.deleteObject(aliYunCosClientConfig.getBucketName(), key);
     }
 
 }

@@ -1,5 +1,7 @@
-package com.ywf.ywfpicturebackend.model.entity;
+package com.ywf.ywfpicturebackend.model.entity.auth;
 
+import com.ywf.ywfpicturebackend.model.entity.CommonPermission;
+import com.ywf.ywfpicturebackend.model.entity.CommonRole;
 import lombok.Data;
 
 import java.io.Serializable;

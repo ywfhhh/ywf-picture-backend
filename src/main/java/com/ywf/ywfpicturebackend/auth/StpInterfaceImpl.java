@@ -46,6 +46,8 @@ public class StpInterfaceImpl implements StpInterface {
     @Resource
     SpaceUserAuthManager spaceUserAuthManager;
     @Resource
+    SpaceAuthManager spaceAuthManager;
+    @Resource
     PictureService pictureService;
     @Resource
     UserService userService;
@@ -121,95 +123,89 @@ public class StpInterfaceImpl implements StpInterface {
         if (loginUser == null) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "用户未登录");
         }
-        List<String> USER_ALL_PERMISSIONS = userAuthManager.getPermissionsByRole(loginUser.getUserRole());
+        List<String> permissionList = new ArrayList<>();
+        // 添加用户角色基本权限
+        permissionList.addAll(userAuthManager.getPermissionList(loginUser));
+        // 添加用户角色基本空间权限
+        permissionList.addAll(spaceAuthManager.getPermissionList(loginUser));
         // 获取上下文对象
         SpaceUserAuthContext authContext = getAuthContextByRequest();
-        // 如果所有字段都为空，查公共图库
-        if (isAllFieldsNull(authContext)) {
-            USER_ALL_PERMISSIONS.addAll(spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue()));
-            return USER_ALL_PERMISSIONS;
-        }
         // 优先从上下文中获取 SpaceUser 对象
         SpaceUser spaceUser = authContext.getSpaceUser();
         if (spaceUser != null) {
-            USER_ALL_PERMISSIONS.addAll(spaceUserAuthManager.getPermissionsByRole(spaceUser.getSpaceRole()));
-            return USER_ALL_PERMISSIONS;
+            // 依据空间角色获取对团队空间的权限
+            permissionList.addAll(spaceUserAuthManager.getPermissionsByRole(spaceUser.getSpaceRole()));
         }
         // 如果有 spaceUserId，必然是团队空间，通过数据库查询 SpaceUser 对象
         Long spaceUserId = authContext.getSpaceUserId();
         if (spaceUserId != null) {
+            // 这里的spaceUserId指的是要修改的SpaceUser表id
             spaceUser = spaceUserService.getById(spaceUserId);
             if (spaceUser == null) {
                 throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未找到空间用户信息");
             }
             // 取出当前登录用户对应的 spaceUser
-            SpaceUser loginSpaceUser = spaceUserService.lambdaQuery()
-                    .eq(SpaceUser::getSpaceId, spaceUser.getSpaceId())
-                    .eq(SpaceUser::getUserId, loginUser.getId())
-                    .one();
+            SpaceUser loginSpaceUser = spaceUserService.lambdaQuery().eq(SpaceUser::getSpaceId, spaceUser.getSpaceId()).eq(SpaceUser::getUserId, loginUser.getId()).one();
             if (loginSpaceUser == null) {
                 return new ArrayList<>();
             }
             // 这里会导致管理员在私有空间没有权限，可以再查一次库处理
-            USER_ALL_PERMISSIONS.addAll(spaceUserAuthManager.getPermissionsByRole(spaceUser.getSpaceRole()));
-            return USER_ALL_PERMISSIONS;
+            permissionList.addAll(spaceUserAuthManager.getPermissionsByRole(loginSpaceUser.getSpaceRole()));
         }
-        // 如果没有 spaceUserId，尝试通过 spaceId 或 pictureId 获取 Space 对象并处理
         Long spaceId = authContext.getSpaceId();
-        if (spaceId == null) {
-            // 如果spaceId==0，通过 pictureId 获取 Picture 对象和 Space 对象
-            Long pictureId = authContext.getPictureId();
-            // 图片 id 也没有，则默认通过权限校验
-            if (pictureId == null) {
-                USER_ALL_PERMISSIONS.addAll(spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue()));
-                return USER_ALL_PERMISSIONS;
+        if (spaceId == null || spaceId == 0L) {
+            if (loginUser.getUserRole() == UserRoleEnum.ADMIN.getValue())
+                permissionList.addAll(spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue()));
+            else
+                // 普通用户不能够对公共图库进行删除
+                permissionList.addAll(spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.EDITOR.getValue()));
+            spaceId = 0L;
+        } else {
+            // 要么是私有要么是团队
+            // 获取 Space 对象
+            Space space = spaceService.getById(spaceId);
+            if (space == null) {
+                throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未找到空间信息");
             }
-            Picture picture = pictureService.lambdaQuery()
-                    .eq(Picture::getId, pictureId)
-                    .select(Picture::getId, Picture::getSpaceId, Picture::getUserId)
-                    .one();
+            // 根据 Space 类型判断权限
+            if (space.getSpaceType() == SpaceTypeEnum.PRIVATE.getValue()) {
+                // 私有空间，仅本人或管理员有权限
+                if (space.getUserId().equals(loginUser.getId()) || userService.isAdmin(loginUser)) {
+                    permissionList.addAll(spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue()));
+                } else {
+                    return permissionList;
+                }
+            } else {
+                // 团队空间，查询 SpaceUser 并获取角色和权限
+                spaceUser = spaceUserService.lambdaQuery().eq(SpaceUser::getSpaceId, spaceId).eq(SpaceUser::getUserId, loginUser.getId()).one();
+                if (spaceUser == null) {
+                    return new ArrayList<>();
+                }
+                permissionList.addAll(spaceUserAuthManager.getPermissionsByRole(spaceUser.getSpaceRole()));
+            }
+        }
+        // 查看用户对某张图片的权限
+        Long pictureId = authContext.getPictureId();
+        if (pictureId != null) {
+            Picture picture = pictureService.lambdaQuery().eq(Picture::getId, pictureId).eq(Picture::getSpaceId, spaceId).select(Picture::getId, Picture::getSpaceId, Picture::getUserId).one();
             if (picture == null) {
                 throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未找到图片信息");
             }
+            if (picture.getUserId().equals(loginUser.getId()) || loginUser.getUserRole() == UserRoleEnum.ADMIN.getValue()) {
+                permissionList.addAll(spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue()));
+                return permissionList;
+            }
             spaceId = picture.getSpaceId();
-            // 公共图库，仅本人或管理员可操作
-            if (spaceId == 0) {
-                if (picture.getUserId().equals(loginUser.getId()) || userService.isAdmin(loginUser)) {
-                    USER_ALL_PERMISSIONS.addAll(spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue()));
-                    return USER_ALL_PERMISSIONS;
-                } else {
-                    // 不是自己的图片，仅可查看
-                    USER_ALL_PERMISSIONS.addAll(Collections.singletonList(SpaceUserPermissionConstant.PICTURE_VIEW));
-                    return USER_ALL_PERMISSIONS;
-                }
+            SpaceUser spaceUser1 = spaceUserService.lambdaQuery().eq(SpaceUser::getSpaceId, spaceId).eq(SpaceUser::getUserId, loginUser.getId()).one();
+            if (spaceUser1 != null) {
+                permissionList.addAll(spaceUserAuthManager.getPermissionsByRole(spaceUser1.getSpaceRole()));
+                return permissionList;
             }
+            if (spaceId == 0L)
+                permissionList.addAll(spaceAuthManager.getPermissionsByRole(SpaceRoleEnum.VIEWER.getValue()));
+            return permissionList;
         }
-        // 获取 Space 对象
-        Space space = spaceService.getById(spaceId);
-        if (space == null) {
-            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "未找到空间信息");
-        }
-        // 根据 Space 类型判断权限
-        if (space.getSpaceType() == SpaceTypeEnum.PRIVATE.getValue()) {
-            // 私有空间，仅本人或管理员有权限
-            if (space.getUserId().equals(loginUser.getId()) || userService.isAdmin(loginUser)) {
-                USER_ALL_PERMISSIONS.addAll(spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue()));
-                return USER_ALL_PERMISSIONS;
-            } else {
-                return new ArrayList<>();
-            }
-        } else {
-            // 团队空间，查询 SpaceUser 并获取角色和权限
-            spaceUser = spaceUserService.lambdaQuery()
-                    .eq(SpaceUser::getSpaceId, spaceId)
-                    .eq(SpaceUser::getUserId, loginUser.getId())
-                    .one();
-            if (spaceUser == null) {
-                return new ArrayList<>();
-            }
-            USER_ALL_PERMISSIONS.addAll(spaceUserAuthManager.getPermissionsByRole(SpaceRoleEnum.ADMIN.getValue()));
-            return USER_ALL_PERMISSIONS;
-        }
+        return permissionList;
     }
 
 

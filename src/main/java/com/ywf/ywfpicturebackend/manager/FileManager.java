@@ -9,8 +9,6 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpStatus;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
-import com.aliyun.oss.OSSClient;
-import com.aliyun.oss.model.PutObjectResult;
 import com.ywf.ywfpicturebackend.common.ErrorCode;
 import com.ywf.ywfpicturebackend.config.AliYunCosClientConfig;
 import com.ywf.ywfpicturebackend.exception.BusinessException;
@@ -37,7 +35,7 @@ public class FileManager {
     private AliYunCosClientConfig aliYunCosClientConfig;
 
     @Resource
-    private CosManager cosManager;
+    private AliYunCosManager cosManager;
 
     /**
      * 上传图片

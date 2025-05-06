@@ -1,11 +1,16 @@
 package com.ywf.ywfpicturebackend.service;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.ywf.ywfpicturebackend.api.aliyunai.CreateOutPaintingTaskRequest;
+import com.ywf.ywfpicturebackend.api.aliyunai.CreateOutPaintingTaskResponse;
+import com.ywf.ywfpicturebackend.common.ErrorCode;
+import com.ywf.ywfpicturebackend.exception.BusinessException;
 import com.ywf.ywfpicturebackend.model.dto.picture.*;
 import com.ywf.ywfpicturebackend.model.entity.Picture;
 import com.ywf.ywfpicturebackend.model.entity.User;
@@ -14,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author yiwenfeng
@@ -70,4 +76,11 @@ public interface PictureService extends IService<Picture> {
     boolean deletePicture(PictureDeleteRequest pictureDeleteRequest, User loginUser);
 
     boolean editPicture(PictureEditRequest pictureEditRequest, User loginUser);
+
+    public List<PictureVO> searchPictureByColor(Long spaceId, String picColor, User loginUser);
+
+    public void editPictureByBatch(PictureEditByBatchRequest pictureEditByBatchRequest, User loginUser);
+
+    public CreateOutPaintingTaskResponse createPictureOutPaintingTask(CreatePictureOutPaintingTaskRequest createPictureOutPaintingTaskRequest, User loginUser);
+
 }
