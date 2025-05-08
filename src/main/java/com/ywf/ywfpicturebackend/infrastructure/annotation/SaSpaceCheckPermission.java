@@ -2,7 +2,7 @@ package com.ywf.ywfpicturebackend.infrastructure.annotation;
 
 import cn.dev33.satoken.annotation.SaCheckPermission;
 import cn.dev33.satoken.annotation.SaMode;
-import com.ywf.ywfpicturebackend.auth.StpKit;
+import com.ywf.ywfpicturebackend.shared.auth.StpKit;
 import org.springframework.core.annotation.AliasFor;
 
 import java.lang.annotation.ElementType;

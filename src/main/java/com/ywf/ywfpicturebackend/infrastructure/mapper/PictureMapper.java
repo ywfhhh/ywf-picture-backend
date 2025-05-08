@@ -1,7 +1,7 @@
 package com.ywf.ywfpicturebackend.infrastructure.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.ywf.ywfpicturebackend.domain.user.entity.Picture;
+import com.ywf.ywfpicturebackend.domain.picture.entity.Picture;
 import org.apache.ibatis.annotations.Param;
 
 /**

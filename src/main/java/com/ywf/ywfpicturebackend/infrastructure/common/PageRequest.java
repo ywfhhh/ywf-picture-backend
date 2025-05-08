@@ -1,6 +1,6 @@
 package com.ywf.ywfpicturebackend.infrastructure.common;
 
-import com.ywf.ywfpicturebackend.constant.CommonConstant;
+import com.ywf.ywfpicturebackend.shared.constant.CommonConstant;
 import lombok.Data;
 
 /**

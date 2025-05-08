@@ -1,11 +1,11 @@
 package com.ywf.ywfpicturebackend.infrastructure.aop;
 
+import com.ywf.ywfpicturebackend.application.service.UserApplicationService;
 import com.ywf.ywfpicturebackend.infrastructure.annotation.AuthCheck;
 import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
 import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
 import com.ywf.ywfpicturebackend.domain.user.entity.User;
 import com.ywf.ywfpicturebackend.domain.user.valueobj.UserRoleEnum;
-import com.ywf.ywfpicturebackend.application.service.UserService;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 public class AuthInterceptor {
 
     @Resource
-    private UserService userService;
+    private UserApplicationService userService;
 
     /**
      * 执行拦截

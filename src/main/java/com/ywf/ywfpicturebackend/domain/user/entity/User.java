@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.ywf.ywfpicturebackend.domain.user.valueobj.UserRoleEnum;
 import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
 import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
 import lombok.Data;
@@ -114,6 +115,15 @@ public class User implements Serializable {
         if (userPassword.length() < 8) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
         }
+    }
+
+    /**
+     * 是否为管理员
+     *
+     * @return
+     */
+    public boolean isAdmin() {
+        return UserRoleEnum.ADMIN.getValue().equals(this.getUserRole());
     }
 
 }

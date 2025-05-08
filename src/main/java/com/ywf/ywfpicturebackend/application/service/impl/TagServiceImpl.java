@@ -6,13 +6,13 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ywf.ywfpicturebackend.domain.user.service.UserDomainService;
 import com.ywf.ywfpicturebackend.infrastructure.mapper.TagMapper;
 import com.ywf.ywfpicturebackend.interfaces.dto.tag.TagQueryRequest;
 import com.ywf.ywfpicturebackend.domain.user.entity.Tag;
 import com.ywf.ywfpicturebackend.domain.user.entity.User;
-import com.ywf.ywfpicturebackend.interfaces.vo.TagVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.tag.TagVO;
 import com.ywf.ywfpicturebackend.application.service.TagService;
-import com.ywf.ywfpicturebackend.application.service.UserService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 public class TagServiceImpl extends ServiceImpl<TagMapper, Tag>
         implements TagService {
     @Resource
-    private UserService userService;
+    private UserDomainService userService;
 
     @Override
     public QueryWrapper<Tag> getQueryWrapper(TagQueryRequest tagQueryRequest) {
@@ -50,7 +50,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag>
             return tagVOPage;
         }
         Map<Long, String> userIdToName = new HashMap<>();
-        List<User> userList = userService.list();
+        List<User> userList = userService.listAll();
         for (User user : userList) {
             userIdToName.put(user.getId(), user.getUserName());
         }

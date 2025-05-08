@@ -1,6 +1,6 @@
 package com.ywf.ywfpicturebackend.interfaces.dto.picture;
 
-import com.ywf.ywfpicturebackend.api.aliyunai.CreateOutPaintingTaskRequest;
+import com.ywf.ywfpicturebackend.infrastructure.api.aliyunai.CreateOutPaintingTaskRequest;
 import lombok.Data;
 
 import java.io.Serializable;

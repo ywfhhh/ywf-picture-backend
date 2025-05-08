@@ -9,7 +9,7 @@ import com.ywf.ywfpicturebackend.interfaces.dto.space.analyze.*;
 import com.ywf.ywfpicturebackend.interfaces.vo.space.analyze.*;
 import com.ywf.ywfpicturebackend.domain.user.entity.Space;
 import com.ywf.ywfpicturebackend.domain.user.entity.User;
-import com.ywf.ywfpicturebackend.interfaces.vo.SpaceVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.space.SpaceVO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

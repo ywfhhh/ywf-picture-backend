@@ -10,6 +10,8 @@ import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ywf.ywfpicturebackend.application.service.PictureApplicationService;
+import com.ywf.ywfpicturebackend.application.service.UserApplicationService;
 import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
 import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
 import com.ywf.ywfpicturebackend.infrastructure.exception.ThrowUtils;
@@ -17,21 +19,19 @@ import com.ywf.ywfpicturebackend.interfaces.dto.space.SpaceAddRequest;
 import com.ywf.ywfpicturebackend.interfaces.dto.space.SpaceQueryRequest;
 import com.ywf.ywfpicturebackend.interfaces.dto.space.analyze.*;
 import com.ywf.ywfpicturebackend.interfaces.vo.space.analyze.*;
-import com.ywf.ywfpicturebackend.manager.sharding.DynamicShardingManager;
+import com.ywf.ywfpicturebackend.infrastructure.manager.sharding.DynamicShardingManager;
 import com.ywf.ywfpicturebackend.infrastructure.mapper.SpaceMapper;
 import com.ywf.ywfpicturebackend.interfaces.dto.spaceuser.SpaceUserAddRequest;
-import com.ywf.ywfpicturebackend.domain.user.entity.Picture;
+import com.ywf.ywfpicturebackend.domain.picture.entity.Picture;
 import com.ywf.ywfpicturebackend.domain.user.entity.Space;
 import com.ywf.ywfpicturebackend.domain.user.entity.User;
-import com.ywf.ywfpicturebackend.domain.user.valueobj.SpaceLevelEnum;
-import com.ywf.ywfpicturebackend.domain.user.valueobj.SpaceRoleEnum;
-import com.ywf.ywfpicturebackend.domain.user.valueobj.SpaceTypeEnum;
-import com.ywf.ywfpicturebackend.interfaces.vo.SpaceVO;
-import com.ywf.ywfpicturebackend.interfaces.vo.UserVO;
-import com.ywf.ywfpicturebackend.application.service.PictureService;
+import com.ywf.ywfpicturebackend.domain.space.valueobj.SpaceLevelEnum;
+import com.ywf.ywfpicturebackend.domain.space.valueobj.SpaceRoleEnum;
+import com.ywf.ywfpicturebackend.domain.space.valueobj.SpaceTypeEnum;
+import com.ywf.ywfpicturebackend.interfaces.vo.space.SpaceVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.user.UserVO;
 import com.ywf.ywfpicturebackend.application.service.SpaceService;
 import com.ywf.ywfpicturebackend.application.service.SpaceUserService;
-import com.ywf.ywfpicturebackend.application.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -54,12 +54,12 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
     @Resource
     private TransactionTemplate transactionTemplate;
     @Resource
-    private UserService userService;
+    private UserApplicationService userService;
     @Resource
     private SpaceUserService spaceUserService;
     @Resource
     @Lazy
-    private PictureService pictureService;
+    private PictureApplicationService pictureService;
     @Resource
     @Lazy
     private DynamicShardingManager dynamicShardingManager;
@@ -130,7 +130,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         Long userId = loginUser.getId();
         space.setUserId(userId);
         // 权限校验
-        if (SpaceLevelEnum.COMMON.getValue() != spaceAddRequest.getSpaceLevel() && !userService.isAdmin(loginUser)) {
+        if (SpaceLevelEnum.COMMON.getValue() != spaceAddRequest.getSpaceLevel() && !loginUser.isAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR, "无权限创建指定级别的空间");
         }
         // 针对用户进行加锁，使用本地锁
@@ -227,7 +227,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
      */
     public void checkSpaceAuth(User loginUser, Space space) {
         // 仅本人或管理员可访问
-        if (!space.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+        if (!space.getUserId().equals(loginUser.getId()) && !loginUser.isAdmin()) {
             throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
         }
     }
@@ -245,7 +245,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         if (spaceUsageAnalyzeRequest.isQueryAll() || spaceUsageAnalyzeRequest.isQueryPublic()) {
             // 查询全部或公共图库逻辑
             // 仅管理员可以访问
-            boolean isAdmin = userService.isAdmin(loginUser);
+            boolean isAdmin = loginUser.isAdmin();
             ThrowUtils.throwIf(!isAdmin, ErrorCode.NO_AUTH_ERROR, "无权访问空间");
             // 统计公共图库的资源使用
             QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
@@ -326,7 +326,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         // 检查权限
         if (spaceAnalyzeRequest.isQueryAll() || spaceAnalyzeRequest.isQueryPublic()) {
             // 全空间分析或者公共图库权限校验：仅管理员可访问
-            ThrowUtils.throwIf(!userService.isAdmin(loginUser), ErrorCode.NO_AUTH_ERROR, "无权访问公共图库");
+            ThrowUtils.throwIf(!loginUser.isAdmin(), ErrorCode.NO_AUTH_ERROR, "无权访问公共图库");
         } else {
             // 私有空间权限校验
             Long spaceId = spaceAnalyzeRequest.getSpaceId();
@@ -463,7 +463,7 @@ public class SpaceServiceImpl extends ServiceImpl<SpaceMapper, Space>
         ThrowUtils.throwIf(spaceRankAnalyzeRequest == null, ErrorCode.PARAMS_ERROR);
 
         // 仅管理员可查看空间排行
-        ThrowUtils.throwIf(!userService.isAdmin(loginUser), ErrorCode.NO_AUTH_ERROR, "无权查看空间排行");
+        ThrowUtils.throwIf(!loginUser.isAdmin(), ErrorCode.NO_AUTH_ERROR, "无权查看空间排行");
 
         // 构造查询条件
         QueryWrapper<Space> queryWrapper = new QueryWrapper<>();

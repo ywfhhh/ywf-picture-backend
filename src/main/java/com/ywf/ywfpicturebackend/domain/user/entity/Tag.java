@@ -3,7 +3,7 @@ package com.ywf.ywfpicturebackend.domain.user.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.ywf.ywfpicturebackend.interfaces.vo.TagVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.tag.TagVO;
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
 

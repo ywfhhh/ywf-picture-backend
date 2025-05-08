@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.ywf.ywfpicturebackend.interfaces.dto.tag.TagQueryRequest;
 import com.ywf.ywfpicturebackend.domain.user.entity.Tag;
-import com.ywf.ywfpicturebackend.interfaces.vo.TagVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.tag.TagVO;
 
 /**
 * @author yiwenfeng

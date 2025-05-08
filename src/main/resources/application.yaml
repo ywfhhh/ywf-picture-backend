@@ -49,7 +49,7 @@ spring:
             type: CLASS_BASED
             props:
               strategy: standard
-              algorithmClassName: com.ywf.ywfpicturebackend.manager.sharding.PictureShardingAlgorithm
+              algorithmClassName: com.ywf.ywfpicturebackend.infrastructure.manager.sharding.PictureShardingAlgorithm
     props:
       sql-show: true
 

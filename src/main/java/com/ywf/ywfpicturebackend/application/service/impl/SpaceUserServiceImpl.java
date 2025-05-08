@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.ywf.ywfpicturebackend.domain.user.service.UserDomainService;
 import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
 import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
 import com.ywf.ywfpicturebackend.infrastructure.exception.ThrowUtils;
@@ -14,13 +15,12 @@ import com.ywf.ywfpicturebackend.interfaces.dto.spaceuser.SpaceUserQueryRequest;
 import com.ywf.ywfpicturebackend.domain.user.entity.Space;
 import com.ywf.ywfpicturebackend.domain.user.entity.SpaceUser;
 import com.ywf.ywfpicturebackend.domain.user.entity.User;
-import com.ywf.ywfpicturebackend.domain.user.valueobj.SpaceRoleEnum;
-import com.ywf.ywfpicturebackend.interfaces.vo.SpaceUserVO;
-import com.ywf.ywfpicturebackend.interfaces.vo.SpaceVO;
-import com.ywf.ywfpicturebackend.interfaces.vo.UserVO;
+import com.ywf.ywfpicturebackend.domain.space.valueobj.SpaceRoleEnum;
+import com.ywf.ywfpicturebackend.interfaces.vo.spaceuser.SpaceUserVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.space.SpaceVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.user.UserVO;
 import com.ywf.ywfpicturebackend.application.service.SpaceService;
 import com.ywf.ywfpicturebackend.application.service.SpaceUserService;
-import com.ywf.ywfpicturebackend.application.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
@@ -42,7 +42,7 @@ import java.util.stream.Collectors;
 public class SpaceUserServiceImpl extends ServiceImpl<SpaceUserMapper, SpaceUser>
         implements SpaceUserService {
     @Resource
-    UserService userService;
+    UserDomainService userService;
     @Resource
     @Lazy
     SpaceService spaceService;

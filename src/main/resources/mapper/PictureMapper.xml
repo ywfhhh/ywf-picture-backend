@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ywf.ywfpicturebackend.infrastructure.mapper.PictureMapper">
 
-    <resultMap id="BaseResultMap" type="com.ywf.ywfpicturebackend.domain.user.entity.Picture">
+    <resultMap id="BaseResultMap" type="com.ywf.ywfpicturebackend.domain.picture.entity.Picture">
         <id property="id" column="id"/>
         <result property="url" column="url"/>
         <result property="name" column="name"/>
@@ -36,7 +36,7 @@
         userId,createTime,editTime,updateTime,isDelete,
         reviewStatus,reviewMessage,reviewerId,reviewTime,md5
     </sql>
-    <update id="updateByShardingKey" parameterType="com.ywf.ywfpicturebackend.domain.user.entity.Picture">
+    <update id="updateByShardingKey" parameterType="com.ywf.ywfpicturebackend.domain.picture.entity.Picture">
         UPDATE picture
         <set>
             <if test="picture.tags    != null">tags     = #{picture.tags},</if>
@@ -45,7 +45,7 @@
         </set>
         WHERE id = #{picture.id} AND spaceId = #{picture.spaceId}
     </update>
-    <update id="updatePictureReviewStatus" parameterType="com.ywf.ywfpicturebackend.domain.user.entity.Picture">
+    <update id="updatePictureReviewStatus" parameterType="com.ywf.ywfpicturebackend.domain.picture.entity.Picture">
         update picture
         <set>
             <if test="picture.reviewStatus != null">reviewStatus = #{picture.reviewStatus},</if>

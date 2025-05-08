@@ -2,8 +2,8 @@ package com.ywf.ywfpicturebackend.infrastructure.config;
 
 import cn.hutool.core.thread.ThreadFactoryBuilder;
 import com.lmax.disruptor.dsl.Disruptor;
-import com.ywf.ywfpicturebackend.websocket.disruptor.PictureEditEvent;
-import com.ywf.ywfpicturebackend.websocket.disruptor.PictureEditEventWorkHandler;
+import com.ywf.ywfpicturebackend.shared.websocket.disruptor.PictureEditEvent;
+import com.ywf.ywfpicturebackend.shared.websocket.disruptor.PictureEditEventWorkHandler;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

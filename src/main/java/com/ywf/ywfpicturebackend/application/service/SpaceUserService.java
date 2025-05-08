@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.ywf.ywfpicturebackend.interfaces.dto.spaceuser.SpaceUserAddRequest;
 import com.ywf.ywfpicturebackend.interfaces.dto.spaceuser.SpaceUserQueryRequest;
 import com.ywf.ywfpicturebackend.domain.user.entity.SpaceUser;
-import com.ywf.ywfpicturebackend.interfaces.vo.SpaceUserVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.spaceuser.SpaceUserVO;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;

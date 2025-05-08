@@ -3,9 +3,8 @@ package com.ywf.ywfpicturebackend.domain.user.service.impl;
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ywf.ywfpicturebackend.application.service.UserApplicationService;
-import com.ywf.ywfpicturebackend.auth.StpKit;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.ywf.ywfpicturebackend.shared.auth.StpKit;
 import com.ywf.ywfpicturebackend.domain.user.constant.UserConstant;
 import com.ywf.ywfpicturebackend.domain.user.entity.User;
 import com.ywf.ywfpicturebackend.domain.user.repository.UserRepository;
@@ -14,30 +13,44 @@ import com.ywf.ywfpicturebackend.domain.user.valueobj.UserRoleEnum;
 import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
 import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
 import com.ywf.ywfpicturebackend.infrastructure.exception.ThrowUtils;
-import com.ywf.ywfpicturebackend.infrastructure.mapper.UserMapper;
 import com.ywf.ywfpicturebackend.interfaces.dto.user.UserQueryRequest;
-import com.ywf.ywfpicturebackend.interfaces.dto.user.UserRegisterRequest;
-import com.ywf.ywfpicturebackend.interfaces.vo.LoginUserVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.user.LoginUserVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Set;
 
 @Service
-public class UserDomainServiceImpl extends ServiceImpl<UserMapper, User>
-        implements UserDomainService {
+public class UserDomainServiceImpl implements UserDomainService {
     @Resource
     UserRepository userRepository;
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
+        // 2. 检查是否重复
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", userAccount);
+        long count = userRepository.getBaseMapper().selectCount(queryWrapper);
+        if (count > 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "账号重复");
+        }
+        // 3. 加密
+        String encryptPassword = getEncryptPassword(userPassword);
+        // 4. 插入数据
         User user = new User();
         user.setUserAccount(userAccount);
-        user.setUserPassword(userPassword);
-        boolean save = userRepository.save(user);
-        ThrowUtils.throwIf(!save, ErrorCode.OPERATION_ERROR);
+        user.setUserPassword(encryptPassword);
+        user.setUserName("无名");
+        user.setUserRole(UserRoleEnum.USER.getValue());
+        boolean saveResult = userRepository.save(user);
+        if (!saveResult) {
+            throw new BusinessException(ErrorCode.SYSTEM_ERROR, "注册失败，数据库错误");
+        }
+        return user.getId();
     }
 
     public String getEncryptPassword(String userPassword) {
@@ -49,14 +62,14 @@ public class UserDomainServiceImpl extends ServiceImpl<UserMapper, User>
     @Override
     public User getLoginUser(HttpServletRequest request) {
         // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
+        Object userObj = StpKit.SPACE.getSession().get(UserConstant.USER_LOGIN_STATE);
         User currentUser = (User) userObj;
         if (currentUser == null || currentUser.getId() == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
         // 从数据库查询（追求性能的话可以注释，直接返回上述结果）
         long userId = currentUser.getId();
-        currentUser = this.getById(userId);
+        currentUser = userRepository.getById(userId);
         if (currentUser == null) {
             throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
         }
@@ -110,8 +123,54 @@ public class UserDomainServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public boolean isAdmin(User user) {
-        return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
+    public LoginUserVO userLogin(String userAccount, String userPassword, HttpServletRequest request) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<User>().eq("userAccount", userAccount).eq("userPassword", getEncryptPassword(userPassword));
+        User loginUser = userRepository.getOne(queryWrapper);
+        if (loginUser == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR, "用户不存在!");
+        }
+        request.setAttribute(UserConstant.USER_LOGIN_STATE, loginUser);
+        StpKit.SPACE.login(loginUser.getId());
+        StpKit.SPACE.getSession().set(UserConstant.USER_LOGIN_STATE, loginUser);
+        return getLoginUserVO(loginUser);
+    }
+
+    @Override
+    public long addUser(User user) {
+        user.setUserPassword(getEncryptPassword(user.getUserPassword()));
+        boolean addResult = userRepository.save(user);
+        ThrowUtils.throwIf(!addResult, ErrorCode.OPERATION_ERROR);
+        return user.getId();
+    }
+
+    @Override
+    public boolean removeById(long id) {
+        return userRepository.removeById(id);
+    }
+
+    @Override
+    public boolean updateById(User user) {
+        return userRepository.updateById(user);
+    }
+
+    @Override
+    public User getById(long id) {
+        return userRepository.getById(id);
+    }
+
+    @Override
+    public Page<User> page(Page<User> userPage, QueryWrapper<User> queryWrapper) {
+        return userRepository.page(userPage, queryWrapper);
+    }
+
+    @Override
+    public List<User> listByIds(Set<Long> ids) {
+        return userRepository.listByIds(ids);
+    }
+
+    @Override
+    public List<User> listAll() {
+        return userRepository.list();
     }
 
 }

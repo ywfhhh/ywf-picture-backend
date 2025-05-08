@@ -2,15 +2,15 @@ package com.ywf.ywfpicturebackend.infrastructure.aop;
 
 import cn.hutool.core.util.ObjUtil;
 import cn.hutool.core.util.StrUtil;
-import com.ywf.ywfpicturebackend.auth.SpaceUserAuthManager;
-import com.ywf.ywfpicturebackend.constant.SpaceUserPermissionConstant;
-import com.ywf.ywfpicturebackend.domain.user.entity.Picture;
+import com.ywf.ywfpicturebackend.application.service.PictureApplicationService;
+import com.ywf.ywfpicturebackend.application.service.UserApplicationService;
+import com.ywf.ywfpicturebackend.shared.auth.SpaceUserAuthManager;
+import com.ywf.ywfpicturebackend.shared.constant.SpaceUserPermissionConstant;
+import com.ywf.ywfpicturebackend.domain.picture.entity.Picture;
 import com.ywf.ywfpicturebackend.domain.user.entity.Space;
 import com.ywf.ywfpicturebackend.domain.user.entity.User;
-import com.ywf.ywfpicturebackend.domain.user.valueobj.SpaceTypeEnum;
-import com.ywf.ywfpicturebackend.application.service.PictureService;
+import com.ywf.ywfpicturebackend.domain.space.valueobj.SpaceTypeEnum;
 import com.ywf.ywfpicturebackend.application.service.SpaceService;
-import com.ywf.ywfpicturebackend.application.service.UserService;
 import groovyjarjarantlr4.v4.runtime.misc.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.ServerHttpRequest;
@@ -32,10 +32,10 @@ import java.util.Map;
 public class WsHandshakeInterceptor implements HandshakeInterceptor {
 
     @Resource
-    private UserService userService;
+    private UserApplicationService userService;
 
     @Resource
-    private PictureService pictureService;
+    private PictureApplicationService pictureService;
 
     @Resource
     private SpaceService spaceService;

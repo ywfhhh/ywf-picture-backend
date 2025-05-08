@@ -1,7 +1,7 @@
 package com.ywf.ywfpicturebackend.infrastructure.config;
 
-import com.ywf.ywfpicturebackend.websocket.PictureEditHandler;
-import com.ywf.ywfpicturebackend.websocket.WsHandshakeInterceptor;
+import com.ywf.ywfpicturebackend.shared.websocket.PictureEditHandler;
+import com.ywf.ywfpicturebackend.shared.websocket.WsHandshakeInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;

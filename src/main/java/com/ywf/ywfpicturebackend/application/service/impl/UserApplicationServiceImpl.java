@@ -1,30 +1,27 @@
 package com.ywf.ywfpicturebackend.application.service.impl;
 
-import cn.hutool.core.util.ObjUtil;
-import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.ywf.ywfpicturebackend.application.service.UserAppliactionService;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.ywf.ywfpicturebackend.application.service.UserApplicationService;
-import com.ywf.ywfpicturebackend.auth.StpKit;
-import com.ywf.ywfpicturebackend.domain.user.repository.UserRepository;
+import com.ywf.ywfpicturebackend.domain.user.entity.User;
+import com.ywf.ywfpicturebackend.domain.user.service.UserDomainService;
+import com.ywf.ywfpicturebackend.infrastructure.common.DeleteRequest;
 import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
-import com.ywf.ywfpicturebackend.domain.user.constant.UserConstant;
 import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
 import com.ywf.ywfpicturebackend.infrastructure.exception.ThrowUtils;
-import com.ywf.ywfpicturebackend.infrastructure.mapper.UserMapper;
+import com.ywf.ywfpicturebackend.interfaces.dto.user.UserLoginRequest;
 import com.ywf.ywfpicturebackend.interfaces.dto.user.UserQueryRequest;
-import com.ywf.ywfpicturebackend.domain.user.entity.User;
-import com.ywf.ywfpicturebackend.domain.user.valueobj.UserRoleEnum;
 import com.ywf.ywfpicturebackend.interfaces.dto.user.UserRegisterRequest;
-import com.ywf.ywfpicturebackend.interfaces.vo.LoginUserVO;
-import com.ywf.ywfpicturebackend.application.service.UserService;
-import org.springframework.beans.BeanUtils;
+import com.ywf.ywfpicturebackend.interfaces.vo.user.LoginUserVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.user.UserVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Set;
 
 /**
  * @author yiwenfeng
@@ -32,96 +29,124 @@ import javax.servlet.http.HttpServletRequest;
  * @createDate 2025-04-25 19:36:09
  */
 @Service
-public class UserApplicationServiceImpl extends ServiceImpl<UserMapper, User>
-        implements UserApplicationService {
+@Slf4j
+public class UserApplicationServiceImpl implements UserApplicationService {
+
     @Resource
-    UserDomain userRepository;
+    private UserDomainService userDomainService;
 
     @Override
+    @Transactional
     public long userRegister(UserRegisterRequest userRegisterRequest) {
         ThrowUtils.throwIf(userRegisterRequest == null, ErrorCode.PARAMS_ERROR);
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
+        // 校验
         User.validUserRegister(userAccount, userPassword, checkPassword);
-        return user
-    }
-
-    public String getEncryptPassword(String userPassword) {
-        // 盐值，混淆密码
-        final String SALT = "ywf";
-        return DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        return userDomainService.userRegister(userAccount, userPassword, checkPassword);
     }
 
     @Override
+    public LoginUserVO userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
+        ThrowUtils.throwIf(userLoginRequest == null, ErrorCode.PARAMS_ERROR);
+        String userAccount = userLoginRequest.getUserAccount();
+        String userPassword = userLoginRequest.getUserPassword();
+        // 校验
+        User.validUserLogin(userAccount, userPassword);
+        return userDomainService.userLogin(userAccount, userPassword, request);
+    }
+
+    /**
+     * 获取当前登录用户
+     */
+    @Override
     public User getLoginUser(HttpServletRequest request) {
-        // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        User currentUser = (User) userObj;
-        if (currentUser == null || currentUser.getId() == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        // 从数据库查询（追求性能的话可以注释，直接返回上述结果）
-        long userId = currentUser.getId();
-        currentUser = this.getById(userId);
-        if (currentUser == null) {
-            throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
-        }
-        return currentUser;
+        return userDomainService.getLoginUser(request);
+    }
+
+    /**
+     * 用户注销
+     */
+    @Override
+    public boolean userLogout(HttpServletRequest request) {
+        ThrowUtils.throwIf(request == null, ErrorCode.PARAMS_ERROR);
+        return userDomainService.userLogout(request);
     }
 
     @Override
     public LoginUserVO getLoginUserVO(User user) {
-        if (user == null) {
-            return null;
-        }
-        LoginUserVO loginUserVO = new LoginUserVO();
-        BeanUtils.copyProperties(user, loginUserVO);
-        return loginUserVO;
+        return userDomainService.getLoginUserVO(user);
     }
 
     @Override
-    public boolean userLogout(HttpServletRequest request) {
-        // 先判断是否已登录
-        Object userObj = request.getSession().getAttribute(UserConstant.USER_LOGIN_STATE);
-        if (userObj == null) {
-            throw new BusinessException(ErrorCode.OPERATION_ERROR, "未登录");
-        }
-        User loginUser = (User) userObj;
-        // 移除登录态
-        request.getSession().removeAttribute(UserConstant.USER_LOGIN_STATE);
-        StpKit.SPACE.logout(loginUser.getId());
-        return true;
+    public UserVO getUserVO(User user) {
+        return userDomainService.getUserVO(user);
+    }
+
+    @Override
+    public List<UserVO> getUserVOList(List<User> userList) {
+        return userDomainService.getUserVOList(userList);
     }
 
     @Override
     public QueryWrapper<User> getQueryWrapper(UserQueryRequest userQueryRequest) {
-        if (userQueryRequest == null) {
-            throw new BusinessException(ErrorCode.PARAMS_ERROR, "请求参数为空");
-        }
-        Long id = userQueryRequest.getId();
-        String userAccount = userQueryRequest.getUserAccount();
-        String userName = userQueryRequest.getUserName();
-        String userProfile = userQueryRequest.getUserProfile();
-        String userRole = userQueryRequest.getUserRole();
-        String sortField = userQueryRequest.getSortField();
-        String sortOrder = userQueryRequest.getSortOrder();
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq(ObjUtil.isNotNull(id), "id", id);
-        queryWrapper.eq(StrUtil.isNotBlank(userRole), "userRole", userRole);
-        queryWrapper.like(StrUtil.isNotBlank(userAccount), "userAccount", userAccount);
-        queryWrapper.like(StrUtil.isNotBlank(userName), "userName", userName);
-        queryWrapper.like(StrUtil.isNotBlank(userProfile), "userProfile", userProfile);
-        queryWrapper.orderBy(StrUtil.isNotEmpty(sortField), sortOrder.equals("ascend"), sortField);
-        return queryWrapper;
+        return userDomainService.getQueryWrapper(userQueryRequest);
     }
 
     @Override
-    public boolean isAdmin(User user) {
-        return user != null && UserRoleEnum.ADMIN.getValue().equals(user.getUserRole());
+    public long addUser(User user) {
+        return userDomainService.addUser(user);
+    }
+
+    @Override
+    public User getById(long id) {
+        ThrowUtils.throwIf(id <= 0, ErrorCode.PARAMS_ERROR);
+        User user = userDomainService.getById(id);
+        ThrowUtils.throwIf(user == null, ErrorCode.NOT_FOUND_ERROR);
+        return user;
+    }
+
+    @Override
+    public UserVO getUserVOById(long id) {
+        return userDomainService.getUserVO(getById(id));
+    }
+
+    @Override
+    public boolean removeById(DeleteRequest deleteRequest) {
+        if (deleteRequest == null || deleteRequest.getId() <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        return userDomainService.removeById(deleteRequest.getId());
+    }
+
+    @Override
+    public boolean updateById(User user) {
+        boolean result = userDomainService.updateById(user);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return true;
+    }
+
+    @Override
+    public Page<UserVO> listUserVOByPage(UserQueryRequest userQueryRequest) {
+        ThrowUtils.throwIf(userQueryRequest == null, ErrorCode.PARAMS_ERROR);
+        long current = userQueryRequest.getCurrent();
+        long size = userQueryRequest.getPageSize();
+        Page<User> userPage = userDomainService.page(new Page<>(current, size),
+                userDomainService.getQueryWrapper(userQueryRequest));
+        Page<UserVO> userVOPage = new Page<>(current, size, userPage.getTotal());
+        List<UserVO> userVO = userDomainService.getUserVOList(userPage.getRecords());
+        userVOPage.setRecords(userVO);
+        return userVOPage;
+    }
+
+    @Override
+    public List<User> listByIds(Set<Long> userIdSet) {
+        return userDomainService.listByIds(userIdSet);
     }
 
 }
+
 
 
 
