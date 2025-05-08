@@ -5,8 +5,8 @@ import cn.hutool.json.JSONUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.ywf.ywfpicturebackend.model.entity.User;
-import com.ywf.ywfpicturebackend.service.UserService;
+import com.ywf.ywfpicturebackend.domain.user.entity.User;
+import com.ywf.ywfpicturebackend.application.service.UserService;
 import com.ywf.ywfpicturebackend.websocket.disruptor.PictureEditEventProducer;
 import com.ywf.ywfpicturebackend.websocket.enums.PictureEditActionEnum;
 import com.ywf.ywfpicturebackend.websocket.enums.PictureEditMessageTypeEnum;
@@ -16,7 +16,6 @@ import groovyjarjarantlr4.v4.runtime.misc.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
-import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 

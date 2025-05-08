@@ -1,9 +1,8 @@
 package com.ywf.ywfpicturebackend.manager.upload;
 
 import cn.hutool.core.io.FileUtil;
-import com.ywf.ywfpicturebackend.common.ErrorCode;
-import com.ywf.ywfpicturebackend.exception.ThrowUtils;
-import org.springframework.stereotype.Service;
+import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
+import com.ywf.ywfpicturebackend.infrastructure.exception.ThrowUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;

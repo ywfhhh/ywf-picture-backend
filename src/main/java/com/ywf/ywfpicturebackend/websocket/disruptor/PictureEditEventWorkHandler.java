@@ -2,8 +2,8 @@ package com.ywf.ywfpicturebackend.websocket.disruptor;
 
 import cn.hutool.json.JSONUtil;
 import com.lmax.disruptor.WorkHandler;
-import com.ywf.ywfpicturebackend.model.entity.User;
-import com.ywf.ywfpicturebackend.service.UserService;
+import com.ywf.ywfpicturebackend.domain.user.entity.User;
+import com.ywf.ywfpicturebackend.application.service.UserService;
 import com.ywf.ywfpicturebackend.websocket.PictureEditHandler;
 import com.ywf.ywfpicturebackend.websocket.enums.PictureEditMessageTypeEnum;
 import com.ywf.ywfpicturebackend.websocket.model.PictureEditRequestMessage;

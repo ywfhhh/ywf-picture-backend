@@ -6,8 +6,8 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.ywf.ywfpicturebackend.api.imagesearch.ImageSearchResult;
-import com.ywf.ywfpicturebackend.common.ErrorCode;
-import com.ywf.ywfpicturebackend.exception.BusinessException;
+import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
+import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;

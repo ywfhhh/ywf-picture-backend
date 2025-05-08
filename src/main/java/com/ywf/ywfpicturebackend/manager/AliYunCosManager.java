@@ -4,8 +4,8 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.model.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ywf.ywfpicturebackend.config.AliYunCosClientConfig;
-import com.ywf.ywfpicturebackend.model.dto.file.UploadPictureResult;
+import com.ywf.ywfpicturebackend.infrastructure.config.AliYunCosClientConfig;
+import com.ywf.ywfpicturebackend.interfaces.dto.file.UploadPictureResult;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Resource;

@@ -3,12 +3,11 @@ package com.ywf.ywfpicturebackend.manager.upload;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.crypto.SecureUtil;
-import com.ywf.ywfpicturebackend.common.ErrorCode;
-import com.ywf.ywfpicturebackend.config.AliYunCosClientConfig;
-import com.ywf.ywfpicturebackend.exception.BusinessException;
+import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
+import com.ywf.ywfpicturebackend.infrastructure.config.AliYunCosClientConfig;
+import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
 import com.ywf.ywfpicturebackend.manager.AliYunCosManager;
-import com.ywf.ywfpicturebackend.model.dto.file.UploadPictureResult;
-import com.ywf.ywfpicturebackend.model.entity.Picture;
+import com.ywf.ywfpicturebackend.interfaces.dto.file.UploadPictureResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

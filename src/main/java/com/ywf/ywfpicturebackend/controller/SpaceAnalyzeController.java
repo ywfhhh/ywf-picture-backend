@@ -1,15 +1,15 @@
 package com.ywf.ywfpicturebackend.controller;
 
-import com.ywf.ywfpicturebackend.common.BaseResponse;
-import com.ywf.ywfpicturebackend.common.ErrorCode;
-import com.ywf.ywfpicturebackend.common.ResultUtils;
-import com.ywf.ywfpicturebackend.exception.ThrowUtils;
-import com.ywf.ywfpicturebackend.model.dto.space.analyze.*;
-import com.ywf.ywfpicturebackend.model.entity.Space;
-import com.ywf.ywfpicturebackend.model.entity.User;
-import com.ywf.ywfpicturebackend.model.vo.space.analyze.*;
-import com.ywf.ywfpicturebackend.service.SpaceService;
-import com.ywf.ywfpicturebackend.service.UserService;
+import com.ywf.ywfpicturebackend.infrastructure.common.BaseResponse;
+import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
+import com.ywf.ywfpicturebackend.infrastructure.common.ResultUtils;
+import com.ywf.ywfpicturebackend.infrastructure.exception.ThrowUtils;
+import com.ywf.ywfpicturebackend.interfaces.dto.space.analyze.*;
+import com.ywf.ywfpicturebackend.interfaces.vo.space.analyze.*;
+import com.ywf.ywfpicturebackend.domain.user.entity.Space;
+import com.ywf.ywfpicturebackend.domain.user.entity.User;
+import com.ywf.ywfpicturebackend.application.service.SpaceService;
+import com.ywf.ywfpicturebackend.application.service.UserService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;

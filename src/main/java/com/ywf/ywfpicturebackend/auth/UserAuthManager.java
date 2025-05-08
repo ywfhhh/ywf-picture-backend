@@ -3,12 +3,12 @@ package com.ywf.ywfpicturebackend.auth;
 import cn.hutool.core.io.resource.ResourceUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.json.JSONUtil;
-import com.ywf.ywfpicturebackend.model.entity.*;
-import com.ywf.ywfpicturebackend.model.entity.auth.UserAuthConfig;
+import com.ywf.ywfpicturebackend.domain.user.entity.CommonRole;
+import com.ywf.ywfpicturebackend.domain.user.entity.User;
+import com.ywf.ywfpicturebackend.domain.user.entity.auth.UserAuthConfig;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @Component

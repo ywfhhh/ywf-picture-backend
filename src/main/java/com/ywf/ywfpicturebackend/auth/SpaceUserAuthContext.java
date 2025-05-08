@@ -1,8 +1,8 @@
 package com.ywf.ywfpicturebackend.auth;
 
-import com.ywf.ywfpicturebackend.model.entity.Picture;
-import com.ywf.ywfpicturebackend.model.entity.Space;
-import com.ywf.ywfpicturebackend.model.entity.SpaceUser;
+import com.ywf.ywfpicturebackend.domain.user.entity.Picture;
+import com.ywf.ywfpicturebackend.domain.user.entity.Space;
+import com.ywf.ywfpicturebackend.domain.user.entity.SpaceUser;
 import lombok.Data;
 
 /**

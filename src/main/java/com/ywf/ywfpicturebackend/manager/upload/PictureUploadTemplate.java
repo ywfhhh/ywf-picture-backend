@@ -4,7 +4,7 @@ import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.NumberUtil;
 import cn.hutool.crypto.SecureUtil;
 import com.qcloud.cos.model.ciModel.persistence.ImageInfo;
-import com.ywf.ywfpicturebackend.model.dto.file.UploadPictureResult;
+import com.ywf.ywfpicturebackend.interfaces.dto.file.UploadPictureResult;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;

@@ -2,7 +2,7 @@ package com.ywf.ywfpicturebackend.websocket.disruptor;
 
 import com.lmax.disruptor.RingBuffer;
 import com.lmax.disruptor.dsl.Disruptor;
-import com.ywf.ywfpicturebackend.model.entity.User;
+import com.ywf.ywfpicturebackend.domain.user.entity.User;
 import com.ywf.ywfpicturebackend.websocket.model.PictureEditRequestMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

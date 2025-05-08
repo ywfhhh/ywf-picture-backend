@@ -5,9 +5,9 @@ import cn.hutool.http.HttpResponse;
 import cn.hutool.http.HttpStatus;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.http.Method;
-import com.ywf.ywfpicturebackend.common.ErrorCode;
-import com.ywf.ywfpicturebackend.exception.BusinessException;
-import com.ywf.ywfpicturebackend.exception.ThrowUtils;
+import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
+import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
+import com.ywf.ywfpicturebackend.infrastructure.exception.ThrowUtils;
 
 import java.io.File;
 import java.net.MalformedURLException;

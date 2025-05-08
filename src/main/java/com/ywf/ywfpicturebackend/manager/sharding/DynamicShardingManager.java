@@ -1,10 +1,10 @@
 package com.ywf.ywfpicturebackend.manager.sharding;
 
 import com.baomidou.mybatisplus.extension.toolkit.SqlRunner;
-import com.ywf.ywfpicturebackend.model.entity.Space;
-import com.ywf.ywfpicturebackend.model.enums.SpaceLevelEnum;
-import com.ywf.ywfpicturebackend.model.enums.SpaceTypeEnum;
-import com.ywf.ywfpicturebackend.service.SpaceService;
+import com.ywf.ywfpicturebackend.domain.user.entity.Space;
+import com.ywf.ywfpicturebackend.domain.user.valueobj.SpaceLevelEnum;
+import com.ywf.ywfpicturebackend.domain.user.valueobj.SpaceTypeEnum;
+import com.ywf.ywfpicturebackend.application.service.SpaceService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shardingsphere.driver.jdbc.core.connection.ShardingSphereConnection;
 import org.apache.shardingsphere.infra.metadata.database.rule.ShardingSphereRuleMetaData;

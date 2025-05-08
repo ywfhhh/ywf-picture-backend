@@ -1,6 +1,6 @@
 package com.ywf.ywfpicturebackend.websocket.model;
 
-import com.ywf.ywfpicturebackend.model.vo.UserVO;
+import com.ywf.ywfpicturebackend.interfaces.vo.UserVO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

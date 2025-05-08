@@ -1,32 +1,27 @@
 package com.ywf.ywfpicturebackend.controller;
 
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.ywf.ywfpicturebackend.annotation.AuthCheck;
-import com.ywf.ywfpicturebackend.common.BaseResponse;
-import com.ywf.ywfpicturebackend.common.DeleteRequest;
-import com.ywf.ywfpicturebackend.common.ErrorCode;
-import com.ywf.ywfpicturebackend.common.ResultUtils;
-import com.ywf.ywfpicturebackend.constant.UserConstant;
-import com.ywf.ywfpicturebackend.exception.BusinessException;
-import com.ywf.ywfpicturebackend.exception.ThrowUtils;
-import com.ywf.ywfpicturebackend.model.dto.picture.PictureEditRequest;
-import com.ywf.ywfpicturebackend.model.dto.picture.PictureQueryRequest;
-import com.ywf.ywfpicturebackend.model.dto.tag.TagAddRequest;
-import com.ywf.ywfpicturebackend.model.dto.tag.TagQueryRequest;
-import com.ywf.ywfpicturebackend.model.entity.Picture;
-import com.ywf.ywfpicturebackend.model.entity.Tag;
-import com.ywf.ywfpicturebackend.model.entity.User;
-import com.ywf.ywfpicturebackend.model.vo.TagVO;
-import com.ywf.ywfpicturebackend.service.TagService;
-import com.ywf.ywfpicturebackend.service.UserService;
+import com.ywf.ywfpicturebackend.infrastructure.annotation.AuthCheck;
+import com.ywf.ywfpicturebackend.infrastructure.common.BaseResponse;
+import com.ywf.ywfpicturebackend.infrastructure.common.DeleteRequest;
+import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
+import com.ywf.ywfpicturebackend.infrastructure.common.ResultUtils;
+import com.ywf.ywfpicturebackend.domain.user.constant.UserConstant;
+import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
+import com.ywf.ywfpicturebackend.infrastructure.exception.ThrowUtils;
+import com.ywf.ywfpicturebackend.interfaces.dto.tag.TagAddRequest;
+import com.ywf.ywfpicturebackend.interfaces.dto.tag.TagQueryRequest;
+import com.ywf.ywfpicturebackend.domain.user.entity.Tag;
+import com.ywf.ywfpicturebackend.domain.user.entity.User;
+import com.ywf.ywfpicturebackend.interfaces.vo.TagVO;
+import com.ywf.ywfpicturebackend.application.service.TagService;
+import com.ywf.ywfpicturebackend.application.service.UserService;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
-import java.util.List;
 
 @RestController
 @RequestMapping("tag")

@@ -4,8 +4,7 @@ import com.qcloud.cos.COSClient;
 import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.model.PutObjectResult;
 import com.qcloud.cos.model.ciModel.persistence.PicOperations;
-import com.ywf.ywfpicturebackend.UrlParser;
-import com.ywf.ywfpicturebackend.config.TxYunCosClientConfig;
+import com.ywf.ywfpicturebackend.infrastructure.config.TxYunCosClientConfig;
 import com.ywf.ywfpicturebackend.utils.UrlParserUtils;
 import org.springframework.stereotype.Component;
 

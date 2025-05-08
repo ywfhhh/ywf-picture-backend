@@ -1,6 +1,6 @@
 package com.ywf.ywfpicturebackend.websocket.disruptor;
 
-import com.ywf.ywfpicturebackend.model.entity.User;
+import com.ywf.ywfpicturebackend.domain.user.entity.User;
 import com.ywf.ywfpicturebackend.websocket.model.PictureEditRequestMessage;
 import lombok.Data;
 import org.springframework.web.socket.WebSocketSession;

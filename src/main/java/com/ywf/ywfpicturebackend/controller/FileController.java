@@ -1,12 +1,12 @@
 package com.ywf.ywfpicturebackend.controller;
 
 import com.aliyun.oss.model.OSSObject;
-import com.ywf.ywfpicturebackend.annotation.AuthCheck;
-import com.ywf.ywfpicturebackend.common.BaseResponse;
-import com.ywf.ywfpicturebackend.common.ErrorCode;
-import com.ywf.ywfpicturebackend.common.ResultUtils;
-import com.ywf.ywfpicturebackend.constant.UserConstant;
-import com.ywf.ywfpicturebackend.exception.BusinessException;
+import com.ywf.ywfpicturebackend.infrastructure.annotation.AuthCheck;
+import com.ywf.ywfpicturebackend.infrastructure.common.BaseResponse;
+import com.ywf.ywfpicturebackend.infrastructure.common.ErrorCode;
+import com.ywf.ywfpicturebackend.infrastructure.common.ResultUtils;
+import com.ywf.ywfpicturebackend.domain.user.constant.UserConstant;
+import com.ywf.ywfpicturebackend.infrastructure.exception.BusinessException;
 import com.ywf.ywfpicturebackend.manager.AliYunCosManager;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
